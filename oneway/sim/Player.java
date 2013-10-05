@@ -7,7 +7,7 @@ public abstract class Player
     // initialize the player
     // capacity: the capacity of each parking lot
     // the first and last parking lot has capacity Integer.MAX_VALUE
-    public abstract void init(int nsegments, int nblocks, int[] capacity);
+    public abstract void init(int nsegments, int[] nblocks, int[] capacity);
 
 
     // set the lights

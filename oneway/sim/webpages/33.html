@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US" xml:lang="en">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-7" />
+ <title>Oneway</title>
+ <style type="text/css">
+  a:link {text-decoration: none; color: blue;}
+  a:visited {text-decoration: none; color: blue;}
+  a:hover {text-decoration: none; color: red;}
+  a:active {text-decoration: none; color: blue;}
+  .arrow-right-green {width:0;height:0;border-top:20px solid transparent;border-bottom:20px solid transparent;border-left:20px solid green;float:left;}
+  .arrow-right-red {width:0;height:0;border-top:20px solid transparent;border-bottom:20px solid transparent;border-left:20px solid red; float:left;}
+  .arrow-left-green {width:0;height:0;border-top:20px solid transparent;border-bottom:20px solid transparent;border-right:20px solid green; float:left;}
+  .arrow-left-red {width:0;height:0;border-top:20px solid transparent;border-bottom:20px solid transparent;border-right:20px solid red; float:left;}
+  div.parking {width:40px;height:40px;float:left;display:inline;}  div.empty {width:48px;height:20px;float:left;border:1px solid black;background-color:gray}
+  div.leftbound {width:50px;height:20px;float:left;display:inline}
+  div.rightbound {width:50px;height:20px;float:left;display:inline}
+  div.blockspace {width:5px;height:40px;float:left;}
+  div.leftcar {width:40px;height:40px;text-align:center;font-size:35px;background-color:blue}
+  div.rightcar {width:40px;height:40px;text-align:center;font-size:35px:background-color:red}
+  div.capacity {width:38px;height:40px;float:left;text-align:center:font-size:50;border:1px solid black;font-weight: bold;font-family: 'Comic Sans MS', cursive, sans-serif}
+ </style>
+</head>
+<body>
+ <div style="width:1280px; margin-left:auto; margin-right: auto;">
+   <div style="width: 200px; height: 70px; float:left; cursor: pointer; text-align: center; font-size: 40px;
+               font-weight: bold; font-family: 'Comic Sans MS', cursive, sans-serif"><a href="play">Play</a></div>
+   <div style="width: 200px; height: 70px; float:left; cursor: pointer; text-align: center; font-size: 40px;
+               font-weight: bold; font-family: 'Comic Sans MS', cursive, sans-serif"><a href="stop">Stop</a></div>
+   <div style="width: 200px; height: 70px; float:left; cursor: pointer; text-align: center; font-size: 40px;
+               font-weight: bold; font-family: 'Comic Sans MS', cursive, sans-serif"><a href="step">Step</a></div>
+   <div style="clear:both;"></div>
+   <div style="width: 500x; height: 70px; float:left; text-align: left; font-size: 25px;font-weight: bold; font-family: 'Comic Sans MS', cursive, sans-serif">Delivered cars:2</div>
+   <div style="clear:both;"></div>
+   <div style="width: 500x; height: 70px; float:left; text-align: left; font-size: 25px;font-weight: bold; font-family: 'Comic Sans MS', cursive, sans-serif">Time:33</div>
+<div style="clear:both;"></div>
+<div id="main"
+<div style="width:40px;height:240px;float:left">
+<div style="width:40px;height:40px"></div>
+<div class="arrow-right-red"></div>
+<div class="capacity">INF</div>
+<div class="capacity">0</div>
+<div class="capacity">0</div>
+</div><div style="width:215; height:240px; float:left">
+<div style="width:215; height:120px"></div><div style="width:215; height:45px"><div class="blockspace"></div>
+<div class="empty"></div>
+<div class="blockspace"></div>
+<div class="empty"></div>
+<div class="blockspace"></div>
+<div class="empty"></div>
+<div class="blockspace"></div>
+<div class="empty"></div>
+<div class="blockspace"></div>
+</div>
+</div>
+<div style="width:40px;height:240px;float:left">
+<div style="width:40px;height:40px"></div>
+<div class="arrow-right-red"></div>
+<div class="capacity">10</div>
+<div class="capacity">0</div>
+<div class="capacity">0</div>
+<div class="arrow-left-red"></div>
+</div><div style="width:215; height:240px; float:left">
+<div style="width:215; height:120px"></div><div style="width:215; height:45px"><div class="blockspace"></div>
+<div style="width:50px;height:80px;float:left"><div class="leftbound"><img src="oneway/leftcar.png" width="50" height="30"></div>
+<div style="width:50px;height:20px;float:left;"></div>
+<div style="width:50px;height:20px;text-align:center;font-size:18px">1</div>
+</div>
+<div class="blockspace"></div>
+<div class="empty"></div>
+<div class="blockspace"></div>
+<div style="width:50px;height:80px;float:left"><div class="leftbound"><img src="oneway/leftcar.png" width="50" height="30"></div>
+<div style="width:50px;height:20px;float:left;"></div>
+<div style="width:50px;height:20px;text-align:center;font-size:18px">2</div>
+</div>
+<div class="blockspace"></div>
+<div class="empty"></div>
+<div class="blockspace"></div>
+</div>
+</div>
+<div style="width:40px;height:240px;float:left">
+<div style="width:40px;height:40px"></div>
+<div class="arrow-right-red"></div>
+<div class="capacity">10</div>
+<div class="capacity">2</div>
+<div class="capacity">1</div>
+<div class="arrow-left-red"></div>
+</div><div style="width:215; height:240px; float:left">
+<div style="width:215; height:120px"></div><div style="width:215; height:45px"><div class="blockspace"></div>
+<div class="empty"></div>
+<div class="blockspace"></div>
+<div style="width:50px;height:80px;float:left"><div class="leftbound"><img src="oneway/leftcar.png" width="50" height="30"></div>
+<div style="width:50px;height:20px;float:left;"></div>
+<div style="width:50px;height:20px;text-align:center;font-size:18px">4</div>
+</div>
+<div class="blockspace"></div>
+<div class="empty"></div>
+<div class="blockspace"></div>
+<div style="width:50px;height:80px;float:left"><div class="leftbound"><img src="oneway/leftcar.png" width="50" height="30"></div>
+<div style="width:50px;height:20px;float:left;"></div>
+<div style="width:50px;height:20px;text-align:center;font-size:18px">5</div>
+</div>
+<div class="blockspace"></div>
+</div>
+</div>
+<div style="width:40px;height:240px;float:left">
+<div style="width:40px;height:40px"></div>
+<div class="arrow-right-red"></div>
+<div class="capacity">10</div>
+<div class="capacity">0</div>
+<div class="capacity">1</div>
+<div class="arrow-left-green"></div>
+</div><div style="width:215; height:240px; float:left">
+<div style="width:215; height:120px"></div><div style="width:215; height:45px"><div class="blockspace"></div>
+<div class="empty"></div>
+<div class="blockspace"></div>
+<div class="empty"></div>
+<div class="blockspace"></div>
+<div class="empty"></div>
+<div class="blockspace"></div>
+<div style="width:50px;height:80px;float:left"><div class="rightbound"><img src="oneway/rightcar.jpg" width="50" height="30"></div>
+<div style="width:50px;height:20px;float:left;"></div>
+<div style="width:50px;height:20px;text-align:center;font-size:18px">5</div>
+</div>
+<div class="blockspace"></div>
+</div>
+</div>
+<div style="width:40px;height:240px;float:left">
+<div style="width:40px;height:40px"></div>
+<div class="arrow-right-green"></div>
+<div class="capacity">10</div>
+<div class="capacity">0</div>
+<div class="capacity">1</div>
+<div class="arrow-left-red"></div>
+</div><div style="width:215; height:240px; float:left">
+<div style="width:215; height:120px"></div><div style="width:215; height:45px"><div class="blockspace"></div>
+<div style="width:50px;height:80px;float:left"><div class="rightbound"><img src="oneway/rightcar.jpg" width="50" height="30"></div>
+<div style="width:50px;height:20px;float:left;"></div>
+<div style="width:50px;height:20px;text-align:center;font-size:18px">4</div>
+</div>
+<div class="blockspace"></div>
+<div class="empty"></div>
+<div class="blockspace"></div>
+<div style="width:50px;height:80px;float:left"><div class="rightbound"><img src="oneway/rightcar.jpg" width="50" height="30"></div>
+<div style="width:50px;height:20px;float:left;"></div>
+<div style="width:50px;height:20px;text-align:center;font-size:18px">3</div>
+</div>
+<div class="blockspace"></div>
+<div class="empty"></div>
+<div class="blockspace"></div>
+</div>
+</div>
+<div style="width:40px;height:240px;float:left">
+<div style="width:40px;height:40px"></div>
+<div class="capacity">INF</div>
+<div class="capacity">0</div>
+<div class="capacity">0</div>
+<div class="arrow-left-red"></div>
+</div></div>
+<div style="clear:both;"></div>
+ </div>
+</body>
+</html>

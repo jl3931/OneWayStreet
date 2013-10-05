@@ -5,9 +5,12 @@ import java.util.*;
 
 public class OnewayGUI extends Oneway
 {
+    static final int PIXELS = 1280;
+    static int BLOCK_WIDTH = 50;
+    static int BLANK_WIDTH = 5;
+
     // the html of current state
     public String state() {
-        int pixels = 8000;
         String title = "Oneway";
         StringBuffer buf = new StringBuffer("");
 		buf.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n");
@@ -43,14 +46,14 @@ public class OnewayGUI extends Oneway
         buf.append("  div.rightcar {width:40px;height:40px;text-align:center;font-size:35px:background-color:red}\n");
         
         // parking capacity
-        buf.append("  div.capacity {width:38px;height:40px;text-align:center:font-size:50;border:1px solid black;font-weight: bold;font-family: 'Comic Sans MS', cursive, sans-serif}\n");
+        buf.append("  div.capacity {width:38px;height:40px;float:left;text-align:center:font-size:50;border:1px solid black;font-weight: bold;font-family: 'Comic Sans MS', cursive, sans-serif}\n");
 
 		buf.append(" </style>\n");
 		buf.append("</head>\n");
 		buf.append("<body>\n");
 
 		// general part
-        buf.append(" <div style=\"width:" + pixels + "px; margin-left:auto; margin-right: auto;\">\n");
+        buf.append(" <div style=\"width:" + PIXELS + "px; margin-left:auto; margin-right: auto;\">\n");
 
 		// button 1
 		buf.append("   <div style=\"width: 200px; height: 70px; float:left; cursor: pointer; text-align: center; font-size: 40px;\n");
@@ -73,9 +76,28 @@ public class OnewayGUI extends Oneway
 		buf.append("   <div style=\"width: 500x; height: 70px; float:left; text-align: left; font-size: 25px;font-weight: bold; font-family: 'Comic Sans MS', cursive, sans-serif\">");
         buf.append("Time:" + tick);
         buf.append("</div>\n");
-        buf.append("   <div style=\"clear:both;\"></div>\n");
+        buf.append("<div style=\"clear:both;\"></div>\n");
 
         printMain(buf);
+
+        buf.append("<div style=\"clear:both;\"></div>\n");
+
+        // show the penalty
+        if (deliveredCars == cars.size()) {
+            buf.append("<div style=\"width: 500px; height: 70px; float:left; text-align: left; font-size: 25px;font-weight: bold; font-family: 'Comic Sans MS', cursive, sans-serif\">");
+            buf.append(String.format("Player penalty: %.2f", penalty));
+            buf.append("</div>\n");
+            buf.append("<div style=\"clear:both;\"></div>\n");
+        }
+
+        // if there is something wrong
+        if (errmsg != null) {
+            buf.append("<div style=\"width: 500px; height: 70px; float:left; text-align: left; font-size: 25px;font-weight: bold; font-family: 'Comic Sans MS', cursive, sans-serif\">");
+            buf.append(errmsg);
+            buf.append("</div>\n");
+            buf.append("<div style=\"clear:both;\"></div>\n");
+        }
+
         
 		buf.append(" </div>\n");
 		buf.append("</body>\n");
@@ -83,169 +105,96 @@ public class OnewayGUI extends Oneway
 		return buf.toString();
     }
 
-
     private void printMain(StringBuffer buf) {
-        // the main div
-        buf.append(" <div>\n");
-
-        // print left lights
-        printLights(buf, "left", llights);
-
-        // vertical space
-        buf.append("  <div style=\"width: 400px; height: 50px; float:left;\"></div>\n");
-        buf.append("  <div style=\"clear:both\"></div>\n");
-
-        printRoads(buf);
-
-        // vertical space
-        buf.append("  <div style=\"width: 400px; height: 50px; float:left;\"></div>\n");
-        buf.append("  <div style=\"clear:both\"></div>\n");
-
-        // print right lights
-        printLights(buf, "right", rlights);
-
-        // vertical space
-        buf.append("  <div style=\"width: 400px; height: 50px; float:left;\"></div>\n");
-        buf.append("  <div style=\"clear:both\"></div>\n");
-
-
-        // print parking lots info
-        for (int i = 0; i < capacity.length; i++) {
-            // draw the parking lot
-            // a parking lot is represented by
-            // 1) capacity 2) rightbound cars 3) leftbound cars
-            buf.append("  <div style=\"width:40px;height:120px;float:left;\">\n");
-            // capacity
-            buf.append("   <div class=\"capacity\">");
-            if (i == 0 || i == capacity.length-1)
-                buf.append("INF");
-            else
-                buf.append(capacity[i]);
-            buf.append("</div>");
-            // leftbound
-            buf.append("   <div class=\"capacity\">");
-            if (i != 0)
-                buf.append(left[i].size());
-            else
-                buf.append(0);
-            buf.append("</div>");
-            // rightbound
-            buf.append("   <div class=\"capacity\">");
-            if (i != nsegments)
-                buf.append(right[i].size());
-            else
-                buf.append(0);
-            buf.append("</div>");
-
-            buf.append("  </div>");
-            // draw an empty space
-            int spaces = nblocks * 50 + (nblocks+1) * 5;
-            buf.append("  <div style=\"width:" + spaces + "px;height:120px;float:left;\"></div>\n");
-            
-        }
+        buf.append("<div id=\"main\"\n");
         
-        buf.append("   <div style=\"clear:both;\"></div>\n");
-        buf.append("   <div style=\"height: 100px\"></div>\n");
-        buf.append("   <div style=\"clear:both;\"></div>\n");
-        
-
-        // if game ends
-        // show the penalty
-        if (deliveredCars == cars.size()) {
-            buf.append("   <div style=\"width: 500px; height: 70px; float:left; text-align: left; font-size: 25px;font-weight: bold; font-family: 'Comic Sans MS', cursive, sans-serif\">");
-            buf.append(String.format("Player penalty: %.2f", penalty));
-            buf.append("</div>\n");
-            buf.append("   <div style=\"clear:both;\"></div>\n");
-        }
-
-        // if something is run
-        if (errmsg != null) {
-            buf.append("   <div style=\"width: 500px; height: 70px; float:left; text-align: left; font-size: 25px;font-weight: bold; font-family: 'Comic Sans MS', cursive, sans-serif\">");
-            buf.append(errmsg);
-            buf.append("</div>\n");
-            buf.append("   <div style=\"clear:both;\"></div>\n");
-        }
-    }
-
-    private void printRoads(StringBuffer buf) {
-        // print every segment
-        buf.append("  <div id=\"road\">\n");
         for (int i = 0; i < nsegments; i++) {
-            // print the parking lot
-            buf.append("   <div class=\"parking\">");
-            buf.append("<img src=\"oneway/parking.png\" width=\"40\" height=\"40\">");
-            buf.append("</div>\n");
-
-            // print each block
-            for (int j = 0; j < nblocks; j++) {
-                // print a small space
-                buf.append("   <div class=\"blockspace\"></div>\n");
-                if (segments[i][j] == null) {
-                    // print an empty space
-                    buf.append("   <div class=\"empty\"></div>\n");
-                }
-                else {
-                    // print other
-                    String dir = (segments[i][j].dir > 0) ? "rightbound" : "leftbound";
-                    String img = (segments[i][j].dir > 0) ? "oneway/rightcar.jpg" : "oneway/leftcar.png";
-
-                    buf.append("   <div style=\"width:50px;height:80px;float:left\">");
-                    // the car
-                    buf.append("   <div class=\"" + dir + "\">");
-                    //                    buf.append(segments[i][j].startTime);
-                    buf.append("<img src=\"" + img + "\" width=\"50\" height=\"30\">");
-                    buf.append("</div>\n");
-                    
-                    // vertical space
-                    buf.append("   <div style=\"width:50px;height:20px;float:left;\"></div>\n");
-
-                    // the time
-                    buf.append("   <div style=\"width:50px;height:20px;text-align:center;font-size:18px\">");
-                    buf.append(segments[i][j].startTime);
-                    buf.append("   </div>\n");
-                    
-                    // close
-                    buf.append("   </div>\n");
-                }
-            }
-            // print a small space
-            buf.append("   <div class=\"blockspace\"></div>\n");
+            printParkingLot(buf, i);
+            printRoad(buf, i);
         }
         // print the last parking lot
-        buf.append("   <div class=\"parking\">");
-        buf.append("<img src=\"oneway/parking.png\" width=\"40\" height=\"40\">");
-        buf.append("</div>\n");
+        printParkingLot(buf, nsegments);
 
-        buf.append("   <div style=\"clear:both\"> </div>\n");
-        buf.append("  </div>\n");
+        buf.append("</div>\n");
     }
 
-    private void printLights(StringBuffer buf, String dir, boolean[] lights) {
-        buf.append("  <div>\n");
-        // print a paddling
-        if (dir == "left") {
-            int spaces = nblocks * 50 + (nblocks+1) * 5 + 40;
-            buf.append("   <div style=\"width:" + spaces + "px;height:20px;float:left;\"></div>\n");
-        }
+    private void printRoad(StringBuffer buf, int segId) {
+        // the width of the road
+        int roadWidth = nblocks[segId] * BLOCK_WIDTH + (nblocks[segId]-1) * BLANK_WIDTH;
+        buf.append("<div style=\"width:" + roadWidth + "; height:240px; float:left\">\n");
 
-        for (int i = 0; i < lights.length; i++) {
-            String light = "arrow-" + dir;
-            if (lights[i] == true)
-                light = light + "-green";
-            else
-                light = light + "-red";
+        // vertical space
+        buf.append("<div style=\"width:" + roadWidth + "; height:120px\"></div>");
+     
+        // road blocks
+        buf.append("<div style=\"width:" + roadWidth + "; height:45px\">");
+        // initial block gap
+        buf.append("<div class=\"blockspace\"></div>\n");
+        
+        for (int i = 0; i < nblocks[segId]; i++) {
+            if (segments[segId][i] == null) {
+                buf.append("<div class=\"empty\"></div>\n");
+            }
+            else {
+                String dir = (segments[segId][i].dir > 0) ? "rightbound" : "leftbound";
+                String img = (segments[segId][i].dir > 0) ? "oneway/rightcar.jpg" : "oneway/leftcar.png";
 
-            // print a small space to align with the parking lot
-            buf.append("   <div style=\"width:10px;height:20px;float:left;\"></div>\n");
-            buf.append("   <div class=\"" + light + "\"></div>\n");
-            // print a small space to align with the parking lot
-            buf.append("   <div style=\"width:10px;height:20px;float:left;\"></div>\n");
-            // leave space for blocks
-            int spaces = nblocks * 50 + (nblocks+1) * 5;
-            buf.append("   <div style=\"width:" + spaces + "px;height:20px;float:left;\"></div>\n");
+                buf.append("<div style=\"width:50px;height:80px;float:left\">");
+                // the car
+                buf.append("<div class=\"" + dir + "\">");
+                buf.append("<img src=\"" + img + "\" width=\"50\" height=\"30\">");
+                buf.append("</div>\n");
+                    
+                // vertical space
+                buf.append("<div style=\"width:50px;height:20px;float:left;\"></div>\n");
+
+                // the time
+                buf.append("<div style=\"width:50px;height:20px;text-align:center;font-size:18px\">" + segments[segId][i].startTime + "</div>\n");
+                    
+                // close
+                buf.append("</div>\n");
+            }
+
+            // block gap
+            buf.append("<div class=\"blockspace\"></div>\n");
         }
-        buf.append("   <div style=\"clear:both\"> </div>\n");
-        buf.append("  </div>\n");
+        
+        buf.append("</div>\n"); // end of road blocks
+        buf.append("</div>\n"); // end of road
+    }
+
+
+    private void printParkingLot(StringBuffer buf, int parkId) {
+        buf.append("<div style=\"width:40px;height:240px;float:left\">\n");
+
+        // vertical space
+        buf.append("<div style=\"width:40px;height:40px\"></div>\n");
+
+        // right light
+        if (parkId != nsegments) {
+            String light = "arrow-right-" + (rlights[parkId] ? "green" : "red");
+            buf.append("<div class=\"" + light + "\"></div>\n");
+        }
+        // capacity
+        String cap = capacity[parkId] == Integer.MAX_VALUE ? "INF" : String.valueOf(capacity[parkId]);
+        buf.append("<div class=\"capacity\">" + cap + "</div>\n");
+
+        // right cars
+        int rcars = right[parkId] == null ? 0 : right[parkId].size();
+        buf.append("<div class=\"capacity\">" + rcars + "</div>\n");
+
+
+        // left cars
+        int lcars = left[parkId] == null ? 0 : left[parkId].size();
+        buf.append("<div class=\"capacity\">" + lcars + "</div>\n");
+
+        // left light
+        if (parkId != 0) {
+            String light = "arrow-left-" + (llights[parkId-1] ? "green" : "red");
+            buf.append("<div class=\"" + light + "\"></div>\n");
+        }
+        
+        buf.append("</div>"); // close parking lot
     }
 
     protected void play() throws Exception {
@@ -284,6 +233,8 @@ public class OnewayGUI extends Oneway
             MovingCar[] movingcopy = movingCars.toArray(new MovingCar[0]);
             // Let the player set the lights
             player.setLights(movingcopy, lcopy, rcopy, llights, rlights);
+
+            printLights(llights, rlights);
 
             boolean success = playStep(llights, rlights, tick);
             if (!success)

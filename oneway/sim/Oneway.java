@@ -165,16 +165,16 @@ public class Oneway
             // They may crash....
             if (llights[i] && 
                 left[i+1].size() > 0) {
-                if (segments[i][nblocks-1] == null) {
+                if (segments[i][nblocks[i]-1] == null) {
                     int start = left[i+1].removeFirst();
-                    MovingCar car = new MovingCar(i, nblocks-1, -1, start);
-                    segments[i][nblocks-1] = car;
+                    MovingCar car = new MovingCar(i, nblocks[i]-1, -1, start);
+                    segments[i][nblocks[i]-1] = car;
                     newMovingCars.add(car);
                 }
-                else if (segments[i][nblocks-1].dir < 0) {
+                else if (segments[i][nblocks[i]-1].dir < 0) {
                 }
                 else {
-                    errmsg = String.format("Car crashs at (%d, %d)\n", i, nblocks-1);
+                    errmsg = String.format("Car crashs at (%d, %d)\n", i, nblocks[i]-1);
                     System.err.print(errmsg);
                     return false;
                 }
@@ -189,11 +189,11 @@ public class Oneway
             movingCars.remove(arriving);
             segments[0][0] = null;
         }
-        if ((arriving = segments[nsegments-1][nblocks-1]) != null &&
+        if ((arriving = segments[nsegments-1][nblocks[nsegments-1]-1]) != null &&
             arriving.dir > 0) {
             deliverCar(arriving, time);
             movingCars.remove(arriving);
-            segments[nsegments-1][nblocks-1] = null;
+            segments[nsegments-1][nblocks[nsegments-1]-1] = null;
         }
         
 
@@ -201,7 +201,7 @@ public class Oneway
         for (int i = 1; i != nsegments; i++) {
             if (left[i].size() != 0 || // left parking lot not empty
                 llights[i-1] == false || // left light is red
-                (segments[i-1][nblocks-1] != null && segments[i-1][nblocks-1].dir < 0))  { // not enough distance from last car
+                (segments[i-1][nblocks[i-1]-1] != null && segments[i-1][nblocks[i-1]-1].dir < 0))  { // not enough distance from last car
                 MovingCar lcar = segments[i][0];
                 if (lcar != null &&
                     lcar.dir < 0 &&
@@ -215,13 +215,13 @@ public class Oneway
             if (right[i].size() != 0 ||
                 rlights[i] == false ||
                 (segments[i][0] != null && segments[i][0].dir > 0)) {
-                MovingCar rcar = segments[i-1][nblocks-1];
+                MovingCar rcar = segments[i-1][nblocks[i-1]-1];
                 if (rcar != null &&
                     rcar.dir > 0 &&
                     movingCars.contains(rcar)) {
                     right[i].add(rcar.startTime);
                     movingCars.remove(rcar);
-                    segments[i-1][nblocks-1] = null;
+                    segments[i-1][nblocks[i-1]-1] = null;
                     System.err.println("Right bound car " + rcar.startTime + " enters parking lot " + i);
                 }
             }
@@ -231,7 +231,7 @@ public class Oneway
         //             or they can directly enter the next
         for (int i = 1; i != nsegments; i++) {
             // check if there is right bound car entering
-            MovingCar rcar = segments[i-1][nblocks-1];
+            MovingCar rcar = segments[i-1][nblocks[i-1]-1];
             MovingCar lcar = segments[i][0];
 
             // these are actually cars that just left the parking lot
@@ -246,10 +246,10 @@ public class Oneway
 
             if (rcar == null) {
                 // left car can go through
-                MovingCar nlcar = new MovingCar(i-1, nblocks-1, -1 , lcar.startTime);
+                MovingCar nlcar = new MovingCar(i-1, nblocks[i-1]-1, -1 , lcar.startTime);
                 newMovingCars.add(nlcar);
                 movingCars.remove(lcar);
-                segments[i-1][nblocks-1] = nlcar;
+                segments[i-1][nblocks[i-1]-1] = nlcar;
                 segments[i][0] = null;
             }
             else if (lcar == null) {
@@ -258,12 +258,12 @@ public class Oneway
                 newMovingCars.add(nrcar);
                 movingCars.remove(rcar);
                 segments[i][0] = nrcar;
-                segments[i-1][nblocks-1] = null;
+                segments[i-1][nblocks[i-1]-1] = null;
             }
             else {
                 // these two cars can swap positions
                 MovingCar nrcar = new MovingCar(i, 0, 1, rcar.startTime);
-                MovingCar nlcar = new MovingCar(i-1, nblocks-1, -1 , lcar.startTime);
+                MovingCar nlcar = new MovingCar(i-1, nblocks[i-1]-1, -1 , lcar.startTime);
                 // add to new moving car list
                 newMovingCars.add(nrcar);
                 newMovingCars.add(nlcar);
@@ -273,7 +273,7 @@ public class Oneway
                 movingCars.remove(lcar);
 
                 segments[i][0] = nrcar;
-                segments[i-1][nblocks-1] = nlcar;
+                segments[i-1][nblocks[i-1]-1] = nlcar;
             }
         }
 
@@ -286,7 +286,7 @@ public class Oneway
             // compute its next position
             int nextblock = car.block + car.dir;
                 
-            assert (nextblock >= 0 && nextblock < nblocks);
+            //            assert (nextblock >= 0 && nextblock < nblocks);
                 
             if (segments[curseg][nextblock] != null) {
                 System.err.printf("Cars crash at (%d, %d)\n", curseg, nextblock);
@@ -557,9 +557,8 @@ public class Oneway
 
 
     void addPenalty(int start, int time) {
-        double m = nsegments * nblocks;
         double L = time - start;
-        penalty += ( L * Math.log(L) - m* Math.log(m) );
+        penalty += ( L * Math.log(L) - mintime* Math.log(mintime) );
     }
 
 
@@ -568,11 +567,18 @@ public class Oneway
             Scanner s = null;
             s = new Scanner(new BufferedReader(new FileReader(configFilePath)));
             
+            mintime = 0;
+
             // nsegments
-            this.nsegments = s.nextInt();
+            nsegments = s.nextInt();
+
+            nblocks = new int[nsegments];
 
             // nblocks
-            this.nblocks = s.nextInt();
+            for (int i = 0; i < nsegments; i++) {
+                nblocks[i] = s.nextInt();
+                mintime = mintime + nblocks[i];
+            }
 
             capacity = new int[nsegments+1];
             capacity[0] = capacity[nsegments] = Integer.MAX_VALUE;
@@ -580,8 +586,6 @@ public class Oneway
             // capacities
             for (int i = 1; i != nsegments; ++i)
                 capacity[i] = s.nextInt();
-            
-            assert !s.hasNext();
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -601,7 +605,10 @@ public class Oneway
         }
             
         // initialize the road
-        segments = new MovingCar[nsegments][nblocks];
+        segments = new MovingCar[nsegments][];
+
+        for (int i = 0; i < nsegments; i++)
+            segments[i] = new MovingCar[nblocks[i]];
 
         // light i controls cars that enter segment i
         llights = new boolean[nsegments];
@@ -740,7 +747,7 @@ public class Oneway
                 System.err.print(capacity[i]);
             System.err.print(" ");
         }
-
+        System.err.println();
     }
 
     // print the lights
@@ -748,7 +755,7 @@ public class Oneway
     void printLights(boolean[] llights, boolean[] rlights)
     {
         System.err.println("##### Setting traffic lights #####");
-        int nspace = 4 * nblocks - 1;
+
         for (int i = 0; i != nsegments + 1; ++i) {
             if (i != 0 && llights[i-1] == true)
                 System.err.print("<");
@@ -759,7 +766,10 @@ public class Oneway
                 System.err.print(">");
             else
                 System.err.print(" ");
-            printSpaces(nspace);
+            if (i != nsegments) {
+                int nspace = 4 * nblocks[i] - 1;
+                printSpaces(nspace);
+            }
         }
         System.err.println();
     }
@@ -793,9 +803,10 @@ public class Oneway
         System.err.println("##### Tick " + tick + " #####");
 
         // print right bound parking lot
-        int nspace = 4 * nblocks - 1;
+
         for (int i = 0; i != nsegments; ++i) {
             System.err.printf("%d->", right[i].size());
+            int nspace = 4 * nblocks[i] - 1;
             printSpaces(nspace - spaces(right[i].size()) + 1);
         }
         System.err.println();
@@ -804,7 +815,7 @@ public class Oneway
         for (int seg = 0; seg != nsegments; ++seg) {
             System.err.print(" |");
             
-            for (int block = 0; block != nblocks; ++block) {
+            for (int block = 0; block != nblocks[seg]; ++block) {
                 System.err.print(" ");
                 if (segments[seg][block] == null)
                     System.err.print("---");
@@ -818,10 +829,14 @@ public class Oneway
         System.err.println();
 
         // print left bound parking lot
-        printSpaces(nspace + 3);
+        printSpaces(4 * nblocks[0] - 1 + 3);
         for (int i = 1; i != nsegments + 1; ++i) {
             System.err.printf("%d<-", left[i].size());
-            printSpaces(nspace - spaces(left[i].size()) + 1);
+
+            if (i != nsegments) {
+                int nspace = 4 * nblocks[i] - 1;
+                printSpaces(nspace - spaces(left[i].size()) + 1);
+            }
         }
         System.err.println();
     }
@@ -831,7 +846,8 @@ public class Oneway
 
     // game configuration
     int nsegments;
-    int nblocks;
+    int[] nblocks;
+    //    int nblocks;
 
     // car timing sequence
     ArrayList<Integer> cars = new ArrayList<Integer>();
@@ -864,6 +880,7 @@ public class Oneway
     int deliveredCars;
     // latency score
     double penalty;
+    int mintime;
 
     // error message for GUI display
     String errmsg;
