@@ -14,19 +14,19 @@ public class MyParking extends PlaceNode
 	private Queue<MyCar> right;
 	private int capacity;
 
-	public MyParking(int c) {
-		this.capacity=c;
-		this.left=null;
-		this.right=null;
+	public MyParking(int c, PlaceNode leftNode, PLaceNode rightNode) {
+		this.capacity = c;
+		this.left = leftNode;
+		this.right = rightNode;
 	}	
 	public void add(MyCar m, int dir){
-		if (dir==-1) left.add(m);
-		if (dir==1) right.add(m);
+		if (dir == -1) left.add(m);
+		if (dir == 1) right.add(m);
 		capacity++;
 	}
 	public MyCar remove(int dir){
-		if (dir==-1) left.remove();
-		if (dir==1) right.remove();
+		if (dir == -1) left.remove();
+		if (dir == 1) right.remove();
 		capacity--;
 		return MyCar;
 	}

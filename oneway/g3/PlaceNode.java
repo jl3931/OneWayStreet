@@ -9,10 +9,10 @@ public abstract class PlaceNode
 	private PlaceNode right;
 
 	public void setLeft(PlaceNode leftNode) {
-		left=leftNode;
+		left = leftNode;
 	}
 	public void setRight(PlaceNode rightNode) {
-		right=rightNode;
+		right = rightNode;
 	}
 }
 

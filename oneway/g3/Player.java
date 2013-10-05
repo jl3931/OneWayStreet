@@ -9,7 +9,7 @@ import java.util.*;
 public class Player extends oneway.sim.Player
 {
 
-	public static globalLength=0;
+	public static int globalLength=0;
     // if the parking lot is almost full
     // it asks the opposite direction to yield
     private static double AlmostFull = 0.8;
