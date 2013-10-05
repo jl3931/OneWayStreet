@@ -9,14 +9,20 @@ public class MyCar
     // Left bound: -1
     public final int dir;
     public final int startTime;
+	private int endTime;
+	private int distCovered;
 
-    public MyCar(MovingCar m){
+    public MyCar(MovingCar m) {
 		this.dir=m.dir;
 		this.startTime=m.startTime;
 	}
-	public MyCar(int d, int time){
+	public MyCar(int d, int time) {
 		this.dir=d;
 		this.startTime=time;
+	}
+	public int updateTime() {
+		endTime=startTime + Player.globalLength - distCovered;
+		return endTime;
 	}
 }
 

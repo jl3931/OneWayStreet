@@ -2,11 +2,14 @@ package oneway.g3;
 
 import oneway.sim.MovingCar;
 import oneway.sim.Parking;
-
 import java.util.*;
+
+
 
 public class Player extends oneway.sim.Player
 {
+
+	public static globalLength=0;
     // if the parking lot is almost full
     // it asks the opposite direction to yield
     private static double AlmostFull = 0.8;
@@ -18,6 +21,8 @@ public class Player extends oneway.sim.Player
         this.nsegments = nsegments;
         this.nblocks = nblocks;
         this.capacity = capacity.clone();
+		for (int i:nblocks)
+			globalLength+=i;
     }
 
 	System p = new System();

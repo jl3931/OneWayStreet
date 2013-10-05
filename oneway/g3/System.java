@@ -6,6 +6,8 @@ import java.util.LinkedList;
 //Each node of LinkedList is either an object of MyRoad or MyParking
 public class System extends LinkedList<PlaceNode>
 {
-    
+    public System() {
+		super();
+	}
 }
 
