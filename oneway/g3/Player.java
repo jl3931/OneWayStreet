@@ -6,26 +6,18 @@ import java.util.*;
 
 
 
-public class Player extends oneway.sim.Player
-{
+public class Player extends oneway.sim.Player {
 
-	public static int globalLength=0;
-    // if the parking lot is almost full
-    // it asks the opposite direction to yield
-    private static double AlmostFull = 0.8;
+    private Simulator sim;
+    public Player() { }
 
-    public Player() {}
-
-    public void init(int nsegments, int[] nblocks, int[] capacity)
-    {
+    public void init(int nsegments, int[] nblocks, int[] capacity) {
         this.nsegments = nsegments;
-        this.nblocks = nblocks;
         this.capacity = capacity.clone();
-		for (int i:nblocks)
-			globalLength+=i;
+        this.nblocks = nblocks.clone();
+        sim = new Simulator(nsegments, nblocks, capacity);
     }
 
-	System p = new System();
     public void setLights(MovingCar[] movingCars,
                           Parking[] left,
                           Parking[] right,
@@ -42,6 +34,22 @@ public class Player extends oneway.sim.Player
         //       resume turning the traffic light after the traffic is clear
         // This strategy avoids car crash, but it cannot guarantee all cars
         // will be delivered in time and the parking lot is never full
+        int[] carsOnRoad = new int[nsegments];
+        int[] leftq = new int[nsegments+1];
+        int[] rightq = new int[nsegments+1];
+        for (MovingCar c : movingCars)
+            carsOnRoad[c.segment]++;
+        for (int i = 0; i <= nsegments; i++) {
+            if (left[i] == null)
+                leftq[i] = 0;
+            else
+                leftq[i] = left[i].size();
+            if (right[i] == null)
+                rightq[i] = 0;
+            else
+                rightq[i] = right[i].size();
+        }
+        sim.update(carsOnRoad, leftq, rightq);
 
         for (int i = 0; i != nsegments; ++i) {
             llights[i] = false;
@@ -52,8 +60,8 @@ public class Player extends oneway.sim.Player
         
         // find out almost full parking lot
         for (int i = 1; i != nsegments; ++i) {
-            if (left[i].size() + right[i].size() 
-                > capacity[i] * AlmostFull) {
+            if (leftq[i] + rightq[i] 
+                > capacity[i] * 0.8) {
                 indanger[i] = true;
             }            
         }
@@ -84,6 +92,10 @@ public class Player extends oneway.sim.Player
                     llights[i] = false;
             }
         }
+        if (sim.oneStep(llights, rlights))
+            System.out.println("Good");
+        else
+            System.out.println("Fail");
     }
 
 
@@ -95,7 +107,6 @@ public class Player extends oneway.sim.Player
         }
         return false;
     }
-
 
     private int nsegments;
     private int[] nblocks;
