@@ -3,18 +3,18 @@ package oneway.g3;
 //one object of MyRoad represents one segment
 public class MyRoad extends PlaceNode
 {
-    private int length; //length of this segment
+  private int length; //length of this segment
 	private MyCar[] cars;
 	private int segment; //segment id
 
-	public MyRoad(int l, int s, PlaceNode leftNode, PLaceNode rightNode) {
+	public MyRoad(int l, int s, PlaceNode leftNode, PlaceNode rightNode) {
 		this.length = l;
 		this.segment = s;
-		this.left = leftNode;
-		this.right = rightNode;
+		this.setLeft(leftNode);
+		this.setRight(rightNode);
 		cars = new MyCar[l];
 		for (int i=0; i<l; i++)
-			MyCar[i] = null;
+			cars[i] = null;
 	}
 
 	// moves cars along the road
@@ -28,5 +28,6 @@ public class MyRoad extends PlaceNode
 			}
 		}
 	}
+
 }
 

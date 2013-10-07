@@ -10,25 +10,32 @@ import java.util.Queue;
 public class MyParking extends PlaceNode
 {
 
-    private Queue<MyCar> left;
+  private Queue<MyCar> left;
 	private Queue<MyCar> right;
 	private int capacity;
 
-	public MyParking(int c, PlaceNode leftNode, PLaceNode rightNode) {
+	public MyParking(int c, Queue<MyCar> leftQueue, Queue<MyCar> rightQueue) {
 		this.capacity = c;
-		this.left = leftNode;
-		this.right = rightNode;
+		this.left = leftQueue;
+		this.right = rightQueue;
 	}	
+
 	public void add(MyCar m, int dir){
 		if (dir == -1) left.add(m);
 		if (dir == 1) right.add(m);
 		capacity++;
 	}
+
 	public MyCar remove(int dir){
-		if (dir == -1) left.remove();
-		if (dir == 1) right.remove();
-		capacity--;
-		return MyCar;
+		if (dir == -1) {
+			capacity--;
+			return left.remove(); 
+		}
+		else { //(dir == 1) 
+			capacity--;
+			return right.remove();
+		}
 	}
+
 }
 
