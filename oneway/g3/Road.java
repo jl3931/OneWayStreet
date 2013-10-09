@@ -52,6 +52,10 @@ public class Road extends PlaceNode
         return load;
     }
 
+    public int getLength() {
+        return length;
+    }
+
     public void pop(int dir) {
         int index = (dir == 1)? 0: (length-1);
         assert(cars[index] != null);

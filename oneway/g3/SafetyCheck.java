@@ -36,65 +36,155 @@ public class SafetyCheck {
             // skip end parking lot
             if (p.left == null || p.right == null)
                 continue;
-
-            PlaceNode left = p.left;
-            PlaceNode right = p.right;
+            
+            Road left = (Road)p.left;
+            Road right = (Road)p.right;
             int capacity = p.getCapacity();
             int load = p.load();
             assert(load <= capacity);
-            // computer load
-            RoadInfo ri;
-            ri = current.get(left);
-            if (ri.dir == 1)
-                load += ri.load;
-            ri = next.get(left);
-            if (ri.dir == 1)
-                load += ri.load;
-            else if (ri.dir == -1)
-                load -= ri.load;
-            ri = current.get(right);
-            if (ri.dir == -1)
-                load += ri.load;
-            ri = next.get(right);
-            if (ri.dir == -1)
-                load += ri.load;
-            else if (ri.dir == 1)
-                load -= ri.load;
-
-            // case one - capacity can hold
-            if (load <= capacity)
-                continue;
-
-            // stop for now
-            return false;
-            /*
-            // case two - cannot sent it anywhere
-            if (next.get(left).dir == 1 && next.get(right).dir == -1)
-                return false;
-
             // infer next direction from current flow
             int nextdir = 0;
             // time in the future that one road is cleared
-            int lastCar = 0;
-
-            // case four - only one direction can go
-            if (next.get(left).dir == 1) {
-                ri = next.get(right);
-                ri.dir = 1;
-                assert(ri.load < (capacity - load));
-                ri.load = capacity - load;
-                toVisit.add(right.right);
-                continue;
-            }
-            if (next.get(right).dir == -1) {
-                ri = next.get(left);
-                ri.dir = -1;
-                assert(ri.load < (capacity - load));
-                ri.load = capacity - load;
-                toVisit.add(right.right);
-                continue;
+            int lastCarl = 0;
+            int lastCarr = 0;
+            int incomingLoad = 0;
+            // minnimal load that has to be absorbed by parking lot
+            int absorb = 0;
+            // load that can be sent out
+            int react = 0;
+            Car c;
+            RoadInfo ri;
+            for (int i = 0; i < left.getLength() || i < right.getLength(); i++) {
+                if (i < left.getLength()) {
+                    c = left.getCar(-1, i);
+                    if (c != null && c.dir == 1) {
+                        lastCarl = i;
+                        incomingLoad++;
+                    }
                 }
-            */
+                if (i < right.getLength()) {
+                    c = right.getCar(1, i);
+                    if (c != null && c.dir == -1) {
+                        lastCarr = i;
+                        incomingLoad++;
+                    }
+                }
+            }
+            // no car in
+            if (lastCarl == 0 && lastCarr == 0)
+                continue;
+            // one direction
+            if (lastCarl == 0) {
+                if (incomingLoad + load <= capacity)
+                    continue;
+                else {
+                    react = incomingLoad - load - capacity;
+                    ri = next.get(left);
+                    if (ri.dir == 1)
+                        return false;
+                    ri.dir = -1;
+                    ri.load += react;
+                }
+            }
+            if (lastCarr == 0) {
+                if (incomingLoad + load <= capacity)
+                    continue;
+                else {
+                    react = incomingLoad - load - capacity;
+                    ri = next.get(right);
+                    if (ri.dir == -1)
+                        return false;
+                    ri.dir = 1;
+                    ri.load += react;
+                }
+            }
+            // both direction coming
+            if (lastCarl != 0 && lastCarr != 0) {
+                if (incomingLoad + load <= capacity)
+                    continue;
+                // can swap
+                absorb = incomingLoad;
+                if (lastCarl == lastCarr) {
+                    // send one to the right
+                    ri = next.get(right);
+                    if (ri.dir == 0 || ri.dir == 1) {
+                        ri.dir = 1;
+                        ri.load += 1;
+                        absorb--;
+                        if (absorb + load <= capacity)
+                            continue;
+                    }
+                    // send one to left
+                    ri = next.get(left);
+                    if (ri.dir == 0 || ri.dir == 1) {
+                        ri.dir = -1;
+                        ri.load += 1;
+                        absorb--;
+                        if (absorb + load <= capacity)
+                            continue;
+                    }
+                    return false;
+                }
+                // first absorb cars when both sides are coming in
+                absorb = 0;
+                if (lastCarl < lastCarr) {
+                    for (int i = 0; i < lastCarl; i++) {
+                        c = left.getCar(-1, i);
+                        if (c != null && c.dir == 1) {
+                            absorb++;
+                        }
+                        c = right.getCar(1, i);
+                        if (c != null && c.dir == -1) {
+                            absorb++;
+                        }
+                    }
+                    // some more cars on the right cannot be send right as soon as they come
+                    c = right.getCar(1, lastCarl);
+                    if (c != null && c.dir == -1) {
+                        absorb++;
+                    }
+                    c = right.getCar(1, lastCarl+1);
+                    if (c != null && c.dir == -1) {
+                        absorb++;
+                    }
+                    if (absorb + load > capacity)
+                        return false;
+                    react = incomingLoad - absorb;
+                    ri = next.get(left);
+                    if (ri.dir == 1)
+                        return false;
+                    ri.dir = -1;
+                    ri.load += react;
+                }
+                if (lastCarl > lastCarr) {
+                    for (int i = 0; i < lastCarr; i++) {
+                        c = left.getCar(-1, i);
+                        if (c != null && c.dir == 1) {
+                            absorb++;
+                        }
+                        c = right.getCar(1, i);
+                        if (c != null && c.dir == -1) {
+                            absorb++;
+                        }
+                    }
+                    c = left.getCar(1, lastCarr);
+                    if (c != null && c.dir == 1) {
+                        absorb++;
+                    }
+                    c = left.getCar(1, lastCarr+1);
+                    if (c != null && c.dir == 1) {
+                        absorb++;
+                    }
+                    if (absorb + load > capacity)
+                        return false;
+                    react = incomingLoad - absorb;
+                    ri = next.get(right);
+                    if (ri.dir == -1)
+                        return false;
+                    ri.dir = 1;
+                    ri.load += react;
+                }
+            }
         }
         return true;
     }
