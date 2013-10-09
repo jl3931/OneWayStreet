@@ -69,9 +69,9 @@ public class Player extends oneway.sim.Player {
         for (int i = 0; i != nsegments; ++i) {
             // if right bound has car
             // and the next parking lot is not in danger
-            if (right[i].size() > 0 &&
-                !indanger[i+1] &&
-                !hasTraffic(movingCars, i, -1)) {
+            boolean safe_to_send_right = !indanger[i+1] && !hasTraffic(movingCars, i, -1);
+            boolean safe_to_continue_right = i!=0 && safe_to_send_right && hasTraffic(movingCars, i-1, 1); 
+            if ((right[i].size() > 0 && safe_to_send_right) || safe_to_continue_right) {
                 rlights[i] = true;
             }
             
@@ -81,16 +81,16 @@ public class Player extends oneway.sim.Player {
                 llights[i] = true;
             }
 
-            // if both left and right is on
-            // find which dir is in more danger
-            if (rlights[i] && llights[i]) {
-                double lratio = 1.0 * (left[i+1].size() + right[i+1].size()) / capacity[i+1];
-                double rratio = 1.0 * (left[i].size() + right[i].size()) / capacity[i];
-                if (lratio > rratio)
-                    rlights[i] = false;
-                else
-                    llights[i] = false;
-            }
+            // // if both left and right is on
+            // // find which dir is in more danger
+            // if (rlights[i] && llights[i]) {
+            //     double lratio = 1.0 * (left[i+1].size() + right[i+1].size()) / capacity[i+1];
+            //     double rratio = 1.0 * (left[i].size() + right[i].size()) / capacity[i];
+            //     if (lratio > rratio)
+            //         rlights[i] = false;
+            //     else
+            //         llights[i] = false;
+            // }
         }
         if (sim.safetyCheck(llights, rlights))
             System.out.println("Good");
