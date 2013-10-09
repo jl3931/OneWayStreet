@@ -6,8 +6,8 @@ Configuration file format
 
 The configuration file follows this format:
 N: number of segments
-B: number of blocks per segment
-Followed by the capacity of each parking lot (excluding the first one and the last one)
+N integers: the length of each segment
+N-1 integers: the capacity of each parking lot (excluding the first one and the last one)
 
 
 The timing file follows this format:

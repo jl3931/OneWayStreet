@@ -13,7 +13,7 @@ public class Player extends oneway.sim.Player
 
     public Player() {}
 
-    public void init(int nsegments, int nblocks, int[] capacity)
+    public void init(int nsegments, int[] nblocks, int[] capacity)
     {
         this.nsegments = nsegments;
         this.nblocks = nblocks;
@@ -93,6 +93,6 @@ public class Player extends oneway.sim.Player
 
 
     private int nsegments;
-    private int nblocks;
+    private int[] nblocks;
     private int[] capacity;
 }
