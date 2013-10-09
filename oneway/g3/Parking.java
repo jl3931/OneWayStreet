@@ -15,6 +15,23 @@ public class Parking extends PlaceNode {
     private boolean llight;
     private boolean rlight;
 
+    public Parking(PlaceNode left, Parking p) {
+        super(left);
+        leftq = new LinkedList<Car>();
+        rightq = new LinkedList<Car>();
+        capacity = p.capacity;
+        for (Car c : p.leftq) {
+            Car newC = new Car(c);
+            leftq.add(c);
+        }
+        for (Car c : p.rightq) {
+            Car newC = new Car(c);
+            rightq.add(c);
+        }
+        llight = p.llight;
+        rlight = p.rlight;
+    }
+
 	public Parking(PlaceNode left, int capacity) {
         super(left);
 		this.capacity = capacity;
@@ -43,6 +60,10 @@ public class Parking extends PlaceNode {
     public void setLight(boolean llight, boolean rlight) {
         this.llight = llight;
         this.rlight = rlight;
+    }
+
+    public int getCapacity() {
+        return capacity;
     }
     
     public int load() {

@@ -13,6 +13,13 @@ public class Car {
 	private int distCovered;
 	private double estPenalty;
 
+    public Car(Car c) {
+        dir = c.dir;
+        startTime = c.startTime;
+        distCovered = c.distCovered;
+        computePenalty();
+    }
+    
     public Car(MovingCar m) {
 		this(m.dir, m.startTime);
 	}

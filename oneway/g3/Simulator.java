@@ -115,5 +115,47 @@ public class Simulator {
             safe &= p.step();
         return safe;
     }
+
+    public boolean safetyCheck(boolean[] llights, boolean[] rlights) {
+        // make snapshots
+        LinkedList<PlaceNode> oldSystem = new LinkedList<PlaceNode>();
+        LinkedList<Parking> oldParkings = new LinkedList<Parking>();
+        LinkedList<Road> oldRoads = new LinkedList<Road>();
+        // deep copy
+        PlaceNode left = null;
+        PlaceNode current = null;
+        for (int i = 0; i < nsegments; i++) {
+            // build parking lot
+            current = new Parking(left, parkings.get(i));
+            oldParkings.add((Parking)current);
+            oldSystem.add(current);
+            if (left != null)
+                left.setRight(current);
+            left = current;
+            // build road
+            current = new Road(left, roads.get(i));
+            oldRoads.add((Road)current);            
+            oldSystem.add(current);
+            left.setRight(current);
+            left = current;
+        }
+        current = new Parking(left, parkings.get(nsegments));
+        oldParkings.add((Parking)current);
+        oldSystem.add(current);
+        if (left != null)
+            left.setRight(current);
+        
+        if (!oneStep(llights, rlights))
+            return false;
+        SafetyCheck sc = new SafetyCheck();
+        if (!sc.check(system, parkings, roads))
+            return false;
+        
+        // restore
+        system = oldSystem;
+        parkings = oldParkings;
+        roads = oldRoads;
+        return true;
+    }
 }
 
