@@ -32,6 +32,7 @@ public class Car {
 
     public void moveForward() {
         distCovered++;
+        System.out.println("Move Forward: " + dir + " : "+ distCovered);
     }
 
 	public int updateTime() {

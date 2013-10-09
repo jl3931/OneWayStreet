@@ -92,10 +92,12 @@ public class Player extends oneway.sim.Player {
                     llights[i] = false;
             }
         }
-        if (sim.oneStep(llights, rlights))
+        if (sim.safetyCheck(llights, rlights))
             System.out.println("Good");
         else
             System.out.println("Fail");
+
+        sim.oneStep(llights, rlights);
     }
 
 

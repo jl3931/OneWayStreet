@@ -1,6 +1,5 @@
 package oneway.g3;
 import java.util.LinkedList;
-
 public class Simulator {
     private LinkedList<PlaceNode> system;
     private LinkedList<Parking> parkings;
@@ -60,7 +59,7 @@ public class Simulator {
         }
         assert(count == (2 * nsegments + 1));
 	}
-    
+
     public static int getFullLength() {
         return fullLength;
     }
@@ -95,10 +94,10 @@ public class Simulator {
 
     public boolean oneStep(boolean[] llights, boolean[] rlights) {
         // set lights
-        parkings.get(0).setLight(false, llights[0]);
-        parkings.get(nsegments).setLight(rlights[nsegments-1], false);
-        for (int i = 1; i < nsegments; i++) {
-            parkings.get(i).setLight(rlights[i-1], llights[i]);
+        parkings.get(0).setLight(false, rlights[0]);
+        parkings.get(nsegments).setLight(llights[nsegments - 1], false);
+        for (int i = 1; i <= nsegments - 1; i++) {
+            parkings.get(i).setLight(llights[i - 1], rlights[i]);
         }
         // potential new car - we assume that at least one car will come
         Car c;
@@ -113,10 +112,13 @@ public class Simulator {
         // then let cars in parking move
         for (Parking p : parkings)
             safe &= p.step();
+        if (!safe)
+            System.out.println("crash");
         return safe;
     }
 
     public boolean safetyCheck(boolean[] llights, boolean[] rlights) {
+        boolean safe = true;
         // make snapshots
         LinkedList<PlaceNode> oldSystem = new LinkedList<PlaceNode>();
         LinkedList<Parking> oldParkings = new LinkedList<Parking>();
@@ -145,17 +147,19 @@ public class Simulator {
         if (left != null)
             left.setRight(current);
         
-        if (!oneStep(llights, rlights))
-            return false;
-        SafetyCheck sc = new SafetyCheck();
-        if (!sc.check(system, parkings, roads))
-            return false;
+        if (oneStep(llights, rlights)) {
+            SafetyCheck sc = new SafetyCheck();
+            if (!sc.check(system, parkings, roads))
+                safe = false;
+        }
+        else
+            safe = false;
         
         // restore
         system = oldSystem;
         parkings = oldParkings;
         roads = oldRoads;
-        return true;
+        return safe;
     }
 }
 

@@ -20,7 +20,7 @@ public class Oneway
     static boolean trace = true;
 
     // enable gui
-    static boolean gui = true;
+    static boolean gui = false;
 
     // default parameters
     static final String DEFAULT_PLAYER = "dumb";

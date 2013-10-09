@@ -46,13 +46,12 @@ public class Parking extends PlaceNode {
 
 	private Car remove(int dir) {
         assert(dir == 1 || dir == -1);
-        assert(capacity < 0);
 		if (dir == -1) {
             assert(!leftq.isEmpty());
 			return leftq.remove(); 
 		}
 		else {
-            assert(!leftq.isEmpty());
+            assert(!rightq.isEmpty());
 			return rightq.remove();
 		}
 	}
@@ -78,9 +77,13 @@ public class Parking extends PlaceNode {
     }
 
     public boolean step() {
+        System.out.println("Parking step");
+        System.out.println("llight: " + llight);
+        System.out.println("rlight: " + rlight);
         if (llight && !leftq.isEmpty()) {
             if (left.getCar(-1, 0) == null &&
                 left.getCar(-1, 1) == null) {
+                System.out.println("Move out left");
                 Car c = remove(-1);
                 left.add(c);
             }
@@ -88,10 +91,17 @@ public class Parking extends PlaceNode {
         if (rlight && !rightq.isEmpty()) {
             if (right.getCar(1, 0) == null &&
                 right.getCar(1, 1) == null) {
+                System.out.println("Move out right");
                 Car c = remove(1);
                 right.add(c);
             }
         }
+
+        if (left == null)
+            leftq.clear();
+        if (right == null)
+            rightq.clear();
+
         if (load() > capacity)
             return false;
         else

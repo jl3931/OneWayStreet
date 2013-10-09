@@ -33,6 +33,7 @@ public class Road extends PlaceNode
 	}
 
     public void add(Car c) {
+        System.out.println("new car: " + c.dir);
         if (c.dir == 1) cars[0] = c;
         if (c.dir == -1) cars[length-1] = c;
     }
@@ -59,7 +60,7 @@ public class Road extends PlaceNode
 
     public int getDir() {
         int dir = 0;
-		for (int i = 1; i < length; i++) {
+		for (int i = 0; i < length; i++) {
             if (cars[i] != null) {
                 //general dir and car dir are not the same
                 if (dir * cars[i].dir == -1)
@@ -77,27 +78,34 @@ public class Road extends PlaceNode
         int dir = getDir();
         if (dir == CRASH)
             return false;
+        System.out.println("Road step "+ dir);        
         // move into parking lot, capacity check later
         if (dir == 1 && cars[length-1] != null) {
+            System.out.println("move into parking: 1");
             Car c = cars[length-1];
             right.add(c);
             c.moveForward();
             cars[length-1] = null;
         }
         if (dir == -1 && cars[0] != null) {
+            System.out.println("move into parking: -1");
             Car c = cars[0];
-            right.add(c);
+            left.add(c);
             c.moveForward();
             cars[0] = null;
         }
         // move within the road, no need for crash check
-		for (int i = 1; i < length; i++) {
+        Car[] newCars = new Car[length];
+		for (int i = 0; i < length; i++) {
             if (cars[i] != null) {
                 cars[i].moveForward();
-                cars[i+dir] = cars[i];
-                cars[i] = null;
+                int d = cars[i].dir;
+                if ((i+d < 0) || (i+d >= length))
+                    continue;
+                newCars[i+d] = cars[i];
             }
         }
+        cars = newCars;
         return true;
 	}
 }
