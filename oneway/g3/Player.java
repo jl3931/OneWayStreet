@@ -60,8 +60,11 @@ public class Player extends oneway.sim.Player {
         
         // find out almost full parking lot
         for (int i = 1; i != nsegments; ++i) {
-            if (leftq[i] + rightq[i] 
-                > capacity[i] * 0.8) {
+            // System.out.println("from right");
+            // System.out.println(countTraffic(movingCars, i, -1));
+            // System.out.println("from left");
+            // System.out.println(countTraffic(movingCars, i-1, 1));
+            if (leftq[i] + rightq[i] + countTraffic(movingCars, i-1, 1) + countTraffic(movingCars, i, -1) >= capacity[i] - 1) {
                 indanger[i] = true;
             }            
         }
@@ -75,9 +78,10 @@ public class Player extends oneway.sim.Player {
                 rlights[i] = true;
             }
             
-            if (left[i+1].size() > 0 &&
-                !indanger[i] &&
-                !hasTraffic(movingCars, i, 1)) {
+            boolean safe_to_send_left = !indanger[i] && !hasTraffic(movingCars, i, 1);
+            boolean safe_to_continue_left = safe_to_send_left && hasTraffic(movingCars, i+1, -1); 
+            boolean incoming_right = i!=0 && hasTraffic(movingCars, i-1, 1);
+            if ((left[i+1].size() > 0 && safe_to_send_left) || (safe_to_continue_left && !incoming_right)) {
                 llights[i] = true;
             }
 
@@ -92,12 +96,38 @@ public class Player extends oneway.sim.Player {
             //         llights[i] = false;
             // }
         }
+        // // we now make sure no oppossing lights are both on at the same segment 
+        // for (int i = 1; i != nsegments; ++i) {
+        //     // CHANGE TO TURN OFF ONE WITH MOST ACCUMULATED PENALTY RATHER THAN JUST ARBITRARY
+        //     if (rlights[i] && llights[i+1]) {
+        //         llights[i+1] = false;
+        //     }
+
+        // }
+        // for (int i = 1; i != nsegments; ++i) {
+        //     // CHANGE TO TURN OFF ONE WITH MOST ACCUMULATED PENALTY RATHER THAN JUST ARBITRARY
+        //     if (llights[i] && rlights[i-1]) {
+        //         llights[i] = false;
+        //     }
+        // }
+
+
         if (sim.safetyCheck(llights, rlights))
             System.out.println("Good");
         else
             System.out.println("Fail");
 
         sim.oneStep(llights, rlights);
+    }
+
+    // check if the segment has traffic
+    private int countTraffic(MovingCar[] cars, int seg, int dir) {
+        int count = 0;
+        for (MovingCar car : cars) {
+            if (car.segment == seg && car.dir == dir)
+                count++;
+        }
+        return count;
     }
 
 
