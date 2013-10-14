@@ -72,16 +72,17 @@ public class Player extends oneway.sim.Player {
         for (int i = 0; i != nsegments; ++i) {
             // if right bound has car
             // and the next parking lot is not in danger
-            boolean safe_to_send_right = !indanger[i+1] && !hasTraffic(movingCars, i, -1);
+            boolean safe_to_send_right = !hasTraffic(movingCars, i, -1);
             boolean safe_to_continue_right = i!=0 && safe_to_send_right && hasTraffic(movingCars, i-1, 1); 
-            if ((right[i].size() > 0 && safe_to_send_right) || safe_to_continue_right) {
+            if ((right[i].size() > 0 && safe_to_send_right && !indanger[i+1]) || safe_to_continue_right) {
                 rlights[i] = true;
             }
             
-            boolean safe_to_send_left = !indanger[i] && !hasTraffic(movingCars, i, 1);
+            boolean cars_going_left = left[i+1].size() > 0;
+            boolean safe_to_send_left = !hasTraffic(movingCars, i, 1);
             boolean safe_to_continue_left = safe_to_send_left && hasTraffic(movingCars, i+1, -1); 
             boolean incoming_right = i!=0 && hasTraffic(movingCars, i-1, 1);
-            if ((left[i+1].size() > 0 && safe_to_send_left) || (safe_to_continue_left && !incoming_right)) {
+            if ((cars_going_left && safe_to_send_left && !indanger[i]) || (safe_to_continue_left && !incoming_right)) {
                 llights[i] = true;
             }
 
@@ -96,20 +97,21 @@ public class Player extends oneway.sim.Player {
             //         llights[i] = false;
             // }
         }
-        // // we now make sure no oppossing lights are both on at the same segment 
-        // for (int i = 1; i != nsegments; ++i) {
-        //     // CHANGE TO TURN OFF ONE WITH MOST ACCUMULATED PENALTY RATHER THAN JUST ARBITRARY
-        //     if (rlights[i] && llights[i+1]) {
-        //         llights[i+1] = false;
-        //     }
+        // we now make sure no oppossing lights are both on at the same segment 
+        for (int i = 0; i != nsegments-1; ++i) {
+            // CHANGE TO TURN OFF ONE WITH MOST ACCUMULATED PENALTY RATHER THAN JUST ARBITRARY
+            if (rlights[i] && llights[i+1]) {
+                llights[i+1] = false;
+            }
 
-        // }
-        // for (int i = 1; i != nsegments; ++i) {
-        //     // CHANGE TO TURN OFF ONE WITH MOST ACCUMULATED PENALTY RATHER THAN JUST ARBITRARY
-        //     if (llights[i] && rlights[i-1]) {
-        //         llights[i] = false;
-        //     }
-        // }
+        }
+        for (int i = 1; i != nsegments; ++i) {
+            // CHANGE TO TURN OFF ONE WITH MOST ACCUMULATED PENALTY RATHER THAN JUST ARBITRARY
+            if (llights[i] && rlights[i-1]) {
+                System.out.println("Switching " + i + " left to off since " + (i-1) + " is also on");
+                rlights[i-1] = false;
+            }
+        }
 
 
         if (sim.safetyCheck(llights, rlights))
