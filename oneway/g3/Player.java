@@ -51,6 +51,19 @@ public class Player extends oneway.sim.Player {
         }
         sim.update(carsOnRoad, leftq, rightq);
 
+        boolean[][] strategy = basic_strategy(movingCars, leftq, rightq, llights, rlights);
+        
+        if (sim.safetyCheck(strategy[0], strategy[1]))
+            System.out.println("Good");
+        else
+            System.out.println("Fail");
+
+        sim.oneStep(strategy[0], strategy[1]);
+    }
+
+    public boolean[][] basic_strategy(MovingCar[] movingCars, int[] leftq, int[] rightq, boolean[] llights, boolean[] rlights) {
+        boolean[][] strategy = new boolean[2][llights.length];
+
         for (int i = 0; i != nsegments; ++i) {
             llights[i] = false;
             rlights[i] = false;
@@ -60,11 +73,7 @@ public class Player extends oneway.sim.Player {
         
         // find out almost full parking lot
         for (int i = 1; i != nsegments; ++i) {
-            // System.out.println("from right");
-            // System.out.println(countTraffic(movingCars, i, -1));
-            // System.out.println("from left");
-            // System.out.println(countTraffic(movingCars, i-1, 1));
-            if (leftq[i] + rightq[i] + countTraffic(movingCars, i-1, 1) + countTraffic(movingCars, i, -1) >= capacity[i] - 1) {
+            if (leftq[i] + rightq[i] + countTraffic(movingCars, i-1, 1) + countTraffic(movingCars, i, -1) >= capacity[i]) {
                 indanger[i] = true;
             }            
         }
@@ -74,11 +83,11 @@ public class Player extends oneway.sim.Player {
             // and the next parking lot is not in danger
             boolean safe_to_send_right = !hasTraffic(movingCars, i, -1);
             boolean safe_to_continue_right = i!=0 && safe_to_send_right && hasTraffic(movingCars, i-1, 1); 
-            if ((right[i].size() > 0 && safe_to_send_right && !indanger[i+1]) || safe_to_continue_right) {
+            if ((rightq[i] > 0 && safe_to_send_right && !indanger[i+1]) || safe_to_continue_right) {
                 rlights[i] = true;
             }
             
-            boolean cars_going_left = left[i+1].size() > 0;
+            boolean cars_going_left = leftq[i+1] > 0;
             boolean safe_to_send_left = !hasTraffic(movingCars, i, 1);
             boolean safe_to_continue_left = safe_to_send_left && hasTraffic(movingCars, i+1, -1); 
             boolean incoming_right = i!=0 && hasTraffic(movingCars, i-1, 1);
@@ -86,16 +95,6 @@ public class Player extends oneway.sim.Player {
                 llights[i] = true;
             }
 
-            // // if both left and right is on
-            // // find which dir is in more danger
-            // if (rlights[i] && llights[i]) {
-            //     double lratio = 1.0 * (left[i+1].size() + right[i+1].size()) / capacity[i+1];
-            //     double rratio = 1.0 * (left[i].size() + right[i].size()) / capacity[i];
-            //     if (lratio > rratio)
-            //         rlights[i] = false;
-            //     else
-            //         llights[i] = false;
-            // }
         }
         // we now make sure no oppossing lights are both on at the same segment 
         for (int i = 0; i != nsegments-1; ++i) {
@@ -108,18 +107,13 @@ public class Player extends oneway.sim.Player {
         for (int i = 1; i != nsegments; ++i) {
             // CHANGE TO TURN OFF ONE WITH MOST ACCUMULATED PENALTY RATHER THAN JUST ARBITRARY
             if (llights[i] && rlights[i-1]) {
-                System.out.println("Switching " + i + " left to off since " + (i-1) + " is also on");
                 rlights[i-1] = false;
             }
         }
 
-
-        if (sim.safetyCheck(llights, rlights))
-            System.out.println("Good");
-        else
-            System.out.println("Fail");
-
-        sim.oneStep(llights, rlights);
+        strategy[0] = llights;
+        strategy[1] = rlights;
+        return strategy;
     }
 
     // check if the segment has traffic
