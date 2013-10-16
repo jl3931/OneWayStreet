@@ -26,14 +26,16 @@ public class Player extends oneway.sim.Player {
         // WE FIRST GENERATE ALL OF THE ABSTARCTED OBJECTS TO MAKE THE STRATEGIES EASIER TO UNDERSTAND
         this.parkingLots = generateParkingLots(left, right, llights, rlights);
         sim.update(movingCars, parkingLots);
-
+        // sim.oneStep(llights, rlights);
+        // sim.update(movingCars, parkingLots);
+        // sim = new Simulator(nsegments, nblocks, capacity);
         // HERE WE GENERATE A BUNCH OF SUCCESSORS NODES BASED ON DIFFERENT STRATEGIES
         // double best_score = 0.0;
         // double score_a =
         // sim.update(movingCars, parkingLots);
         // for (int i = 0; i < 30; i ++) {
-            boolean[][] strategy = basic_strategy(sim.getMovingCars(), sim.getParkingLots(), RIGHT);
-            setStrategy(strategy, llights, rlights);
+        boolean[][] strategy = basic_strategy(sim.getMovingCars(), sim.getParkingLots(), RIGHT);
+        setStrategy(strategy, llights, rlights);
         //     safe = sim.safetyCheck(llights, rlights) && sim.oneStep(llights, rlights);
         //     sim.evaluatePenalty();
         // }
@@ -49,6 +51,8 @@ public class Player extends oneway.sim.Player {
         else
             System.out.println("Fail");
 
+        // sim.oneStep(llights, rlights);
+        // sim.update(movingCars, parkingLots);
         sim.oneStep(llights, rlights);
         sim.evaluatePenalty();
     }
