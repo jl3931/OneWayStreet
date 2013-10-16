@@ -43,7 +43,6 @@ public class Player extends oneway.sim.Player {
 
         boolean[][] strategy = basic_strategy(movingCars, this.parkingLots);
         setStrategy(strategy, llights, rlights);
-        System.out.println(strategy[0][strategy.length-1]);
         //boolean[][] strategy = basic_strategy(movingCars, leftq, rightq, llights, rlights);
         // WE THEN SELECT THE STRATEGY WITH THE BEST HEURISTIC THAT PASSES THE SAFETY CHECK AND SIMULATE INTO THE FUTURE. 
         
@@ -75,47 +74,56 @@ public class Player extends oneway.sim.Player {
             parkings[i].setLight(false, false);
         }
 
-        boolean[] indanger = new boolean[nsegments+1];
+        boolean[] indanger = new boolean[parkings.length];
         
         // find out almost full parking lot
-        for (int i = 1; i != nsegments+1; ++i) {
+        for (int i = 0; i != nsegments+1; ++i) {
+            // System.out.println("capacity is " + parkings[i].getCapacity());
+            // System.out.println("load is " + parkings[i].load() + " + " + countTraffic(movingCars, i-1, 1) + countTraffic(movingCars, i, -1));
             if (parkings[i].load() + countTraffic(movingCars, i-1, 1) + countTraffic(movingCars, i, -1) >= parkings[i].getCapacity()) {
                 indanger[i] = true;
-            }            
+            }
+            System.out.println(indanger[i]);            
         }
 
         for (int i = 0; i != nsegments; ++i) {
             // if right bound has car
             // and the next parking lot is not in danger
-            boolean safe_to_send_right = !hasTraffic(movingCars, i, -1);
+            boolean safe_to_send_right = !hasTraffic(movingCars, i, -1) && !indanger[i+1];
             boolean safe_to_continue_right = i!=0 && safe_to_send_right && hasTraffic(movingCars, i-1, 1); 
-            if ((parkings[i].rightLoad() > 0 && safe_to_send_right && !indanger[i+1]) || safe_to_continue_right) {
+            if ((parkings[i].rightLoad() > 0 && safe_to_send_right) || safe_to_continue_right) {
                 parkings[i].setRightLight(true);
             }
             
             boolean cars_going_left = parkings[i+1].leftLoad() > 0;
-            boolean safe_to_send_left = !hasTraffic(movingCars, i, 1) && !parkings[i].rlight;
+            boolean safe_to_send_left;
+            if (i!=0) {
+                safe_to_send_left = !hasTraffic(movingCars, i, 1) && !parkings[i].rlight && !indanger[i-1];
+            }
+            else {
+                safe_to_send_left = !hasTraffic(movingCars, i, 1) && !parkings[i].rlight;
+            }
             boolean safe_to_continue_left = safe_to_send_left && hasTraffic(movingCars, i+1, -1); 
             boolean incoming_right = i!=0 && hasTraffic(movingCars, i-1, 1) && !parkings[i].rlight;
-            if ((cars_going_left && safe_to_send_left && !indanger[i]) || (safe_to_continue_left && !incoming_right)) {
+            if ((cars_going_left && safe_to_send_left) || (safe_to_continue_left && !incoming_right)) {
                 parkings[i+1].setLeftLight(true);
             }
 
         }
-        // // we now make sure no oppossing lights are both on at the same segment 
-        // for (int i = 0; i != nsegments-1; ++i) {
-        //     // CHANGE TO TURN OFF ONE WITH MOST ACCUMULATED PENALTY RATHER THAN JUST ARBITRARY
-        //     if (parkings[i].rlight && parkings[i+1].llight) {
-        //         parkings[i+1].setLeftLight(false);
-        //     }
+        // we now make sure no oppossing lights are both on at the same segment 
+        for (int i = 0; i != nsegments-1; ++i) {
+            // CHANGE TO TURN OFF ONE WITH MOST ACCUMULATED PENALTY RATHER THAN JUST ARBITRARY
+            if (parkings[i].rlight && parkings[i+1].llight) {
+                parkings[i+1].setLeftLight(false);
+            }
 
-        // }
-        // for (int i = 1; i != nsegments; ++i) {
-        //     // CHANGE TO TURN OFF ONE WITH MOST ACCUMULATED PENALTY RATHER THAN JUST ARBITRARY
-        //     if (parkings[i].llight && parkings[i-1].rlight) {
-        //         parkings[i-1].setRightLight(false);
-        //     }
-        // }
+        }
+        for (int i = 1; i != nsegments; ++i) {
+            // CHANGE TO TURN OFF ONE WITH MOST ACCUMULATED PENALTY RATHER THAN JUST ARBITRARY
+            if (parkings[i].llight && parkings[i-1].rlight) {
+                parkings[i-1].setRightLight(false);
+            }
+        }
 
         for (int i = 0; i != parkings.length; i++) {
             strategy[0][i] = parkings[i].llight;
@@ -126,60 +134,6 @@ public class Player extends oneway.sim.Player {
         return strategy;
     }
 
-    // public boolean[][] basic_strategy(MovingCar[] movingCars, int[] leftq, int[] rightq, boolean[] llights, boolean[] rlights) {
-    //     boolean[][] strategy = new boolean[2][llights.length];
-
-    //     for (int i = 0; i != nsegments; ++i) {
-    //         llights[i] = false;
-    //         rlights[i] = false;
-    //     }
-
-    //     boolean[] indanger = new boolean[nsegments+1];
-        
-    //     // find out almost full parking lot
-    //     for (int i = 1; i != nsegments; ++i) {
-    //         if (leftq[i] + rightq[i] + countTraffic(movingCars, i-1, 1) + countTraffic(movingCars, i, -1) >= capacity[i]) {
-    //             indanger[i] = true;
-    //         }            
-    //     }
-
-    //     for (int i = 0; i != nsegments; ++i) {
-    //         // if right bound has car
-    //         // and the next parking lot is not in danger
-    //         boolean safe_to_send_right = !hasTraffic(movingCars, i, -1);
-    //         boolean safe_to_continue_right = i!=0 && safe_to_send_right && hasTraffic(movingCars, i-1, 1); 
-    //         if ((rightq[i] > 0 && safe_to_send_right && !indanger[i+1]) || safe_to_continue_right) {
-    //             rlights[i] = true;
-    //         }
-            
-    //         boolean cars_going_left = leftq[i+1] > 0;
-    //         boolean safe_to_send_left = !hasTraffic(movingCars, i, 1) && !rlights[i];
-    //         boolean safe_to_continue_left = safe_to_send_left && hasTraffic(movingCars, i+1, -1); 
-    //         boolean incoming_right = i!=0 && hasTraffic(movingCars, i-1, 1) && !rlights[i];
-    //         if ((cars_going_left && safe_to_send_left && !indanger[i]) || (safe_to_continue_left && !incoming_right)) {
-    //             llights[i] = true;
-    //         }
-
-    //     }
-    //     // we now make sure no oppossing lights are both on at the same segment 
-    //     for (int i = 0; i != nsegments-1; ++i) {
-    //         // CHANGE TO TURN OFF ONE WITH MOST ACCUMULATED PENALTY RATHER THAN JUST ARBITRARY
-    //         if (rlights[i] && llights[i+1]) {
-    //             llights[i+1] = false;
-    //         }
-
-    //     }
-    //     for (int i = 1; i != nsegments; ++i) {
-    //         // CHANGE TO TURN OFF ONE WITH MOST ACCUMULATED PENALTY RATHER THAN JUST ARBITRARY
-    //         if (llights[i] && rlights[i-1]) {
-    //             rlights[i-1] = false;
-    //         }
-    //     }
-
-    //     strategy[0] = llights;
-    //     strategy[1] = rlights;
-    //     return strategy;
-    // }
 
     private Parking[] generateParkingLots(oneway.sim.Parking[] left, oneway.sim.Parking[] right, boolean[] llights, boolean[] rlights) {
         int numParkings = capacity.length;
