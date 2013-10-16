@@ -3,8 +3,8 @@ package oneway.g3;
 public class Road extends PlaceNode
 {
     public static final int CRASH = 2;
-    private int length;
-	private Car[] cars;
+    public int length;
+	public Car[] cars;
 	private int segmentId;
 
     public Road(PlaceNode left, Road r) {

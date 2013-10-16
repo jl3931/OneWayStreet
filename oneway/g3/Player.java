@@ -22,11 +22,11 @@ public class Player extends oneway.sim.Player {
     }
 
     public void setLights(MovingCar[] movingCars, oneway.sim.Parking[] left, oneway.sim.Parking[] right, boolean[] llights, boolean[] rlights) {
-        int[] carsOnRoad = new int[nsegments];
+        // int[] carsOnRoad = new int[nsegments];
         int[] leftq = new int[nsegments+1];
         int[] rightq = new int[nsegments+1];
-        for (MovingCar c : movingCars)
-            carsOnRoad[c.segment]++;
+        // for (MovingCar c : movingCars)
+            // carsOnRoad[c.segment]++;
         for (int i = 0; i <= nsegments; i++) {
             if (left[i] == null)
                 leftq[i] = 0;
@@ -37,13 +37,13 @@ public class Player extends oneway.sim.Player {
             else
                 rightq[i] = right[i].size();
         }
-        sim.update(carsOnRoad, leftq, rightq);
+        sim.update(movingCars, leftq, rightq);
 
         // WE FIRST GENERATE ALL OF THE ABSTARCTED OBJECTS TO MAKE THE STRATEGIES EASIER TO UNDERSTAND
         this.parkingLots = generateParkingLots(left, right, llights, rlights);
         // HERE WE GENERATE A BUNCH OF SUCCESSORS NODES BASED ON DIFFERENT STRATEGIES
 
-        boolean[][] strategy = basic_strategy(movingCars, this.parkingLots, LEFT);
+        boolean[][] strategy = basic_strategy(sim.getMovingCars(), this.parkingLots, LEFT);
         setStrategy(strategy, llights, rlights);
         // WE THEN SELECT THE STRATEGY WITH THE BEST HEURISTIC THAT PASSES THE SAFETY CHECK AND SIMULATE INTO THE FUTURE. 
 
@@ -54,6 +54,7 @@ public class Player extends oneway.sim.Player {
             System.out.println("Fail");
 
         sim.oneStep(llights, rlights);
+        sim.evaluatePenalty();
     }
 
     public void setStrategy(boolean[][] strategy, boolean[] llights, boolean[] rlights) {
@@ -65,7 +66,7 @@ public class Player extends oneway.sim.Player {
         }
     }
 
-    public boolean[][] basic_strategy(MovingCar[] movingCars, Parking[] parkings, int priority) {
+    public boolean[][] basic_strategy(Car[] movingCars, Parking[] parkings, int priority) {
         boolean safe_to_send_right;
         boolean safe_to_continue_right;
         boolean future_overflow_possibility_R;
@@ -193,23 +194,26 @@ public class Player extends oneway.sim.Player {
 
 
     // check if the segment has traffic
-    private int countTraffic(MovingCar[] cars, int seg, int dir) {
+    private int countTraffic(Car[] cars, int seg, int dir) {
         int count = 0;
-        for (MovingCar car : cars) {
+        for (Car car : cars) {
             if (car.segment == seg && car.dir == dir)
                 count++;
         }
         return count;
     }
 
-
     // check if the segment has traffic
-    private boolean hasTraffic(MovingCar[] cars, int seg, int dir) {
-        for (MovingCar car : cars) {
+    private boolean hasTraffic(Car[] cars, int seg, int dir) {
+        for (Car car : cars) {
             if (car.segment == seg && car.dir == dir) {
                 if (car.dir == -1 && car.block == 0) {
+                    //car can come to parking lot as other comes out, 
+                    // saving us a tick
                 }
                 else if (car.dir == 1 && car.block == nblocks[seg]-1) {
+                    //car can come to parking lot as other comes out, 
+                    // saving us a tick
                 }
                 else {
                     return true;

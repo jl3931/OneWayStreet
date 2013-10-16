@@ -8,9 +8,9 @@ import java.util.LinkedList;
 // Right bound: 1
 // Left bound: -1
 public class Parking extends PlaceNode {
-    private LinkedList<Car> leftq;
-	private LinkedList<Car> rightq;
-	private int capacity;
+    public LinkedList<Car> leftq;
+	public LinkedList<Car> rightq;
+	public int capacity;
     // lights at the side of parking
     public boolean llight;
     public boolean rlight;
@@ -60,6 +60,7 @@ public class Parking extends PlaceNode {
     }
 
 	public void add(Car c) {
+        System.out.println("CAR ADDED TO PARKING LOT WITH CAPACITY " + capacity);
 		if (c.dir == -1) leftq.add(c);
 		if (c.dir == 1) rightq.add(c);
 	}
@@ -110,6 +111,26 @@ public class Parking extends PlaceNode {
             rightq.pop();
         else
             leftq.pop();
+    }
+
+    public double getDeliveries() {
+        double penalty = 0.0;
+        System.out.println("boom" + leftq.size());
+        if(left == null) {
+            //System.out.println("boom" + leftq.size());
+            for (Car c : leftq) {
+                double T = c.getTime();
+                System.out.println("boom" + T);
+                penalty += (T+1)*Math.log10(T+1);
+            }
+        }
+        if(right == null) {
+            for (Car c : rightq) {
+                double T = c.getTime();
+                penalty += (T)*Math.log10(T);
+            }
+        }
+        return penalty;
     }
 
     public boolean step() {

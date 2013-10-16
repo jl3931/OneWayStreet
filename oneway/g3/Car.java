@@ -10,7 +10,9 @@ public class Car {
     public final int startTime;
 	private int endTime;
     // car move "from road to road" or "from road to parking" +1
-	private int distCovered;
+	public int distCovered;
+    public int segment;
+    public int block;
 	private double estPenalty;
 
     public Car(Car c) {
@@ -20,7 +22,8 @@ public class Car {
     }
     
     public Car(MovingCar m) {
-		this(m.dir, m.startTime);
+		this.dir = m.dir;
+        this.startTime = m.startTime;
 	}
     
 	public Car(int dir, int startTime) {
@@ -31,6 +34,9 @@ public class Car {
 
     public void moveForward() {
         distCovered++;
+        if (distCovered == Simulator.getFullLength()) {
+            Simulator.updateDeliveries(getTime());
+        }
         System.out.println("Move Forward: " + dir + " : "+ distCovered);
     }
 
@@ -39,14 +45,21 @@ public class Car {
 		return endTime;
 	}
 
-	public double computePenalty() {
+    public String toString() {
+        String rpr = "Start: " + startTime + "\n";
+        rpr += "Segment: " + this.segment + "\n";
+        rpr += "Blck: " + this.block + "\n";
+        return rpr;
+    }
+
+	public double getTime() {
         /*
           Penalty is the amount of score incresing if this car does not move
           A smooth way is to d/dx (L*log(L)) = log(L) + 1
         */
         updateTime();
-		estPenalty = Math.log10(endTime - startTime) + 1;
-		return estPenalty;
+		
+		return 1 + endTime - startTime;
 	}
 }
 
