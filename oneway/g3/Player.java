@@ -75,6 +75,7 @@ public class Player extends oneway.sim.Player {
         boolean safe_to_continue_left;
         boolean future_overflow_possibility_L;
         boolean incoming_left;
+        int priority = RIGHT;
 
         boolean[][] strategy = new boolean[2][parkings.length];
 
@@ -98,8 +99,7 @@ public class Player extends oneway.sim.Player {
 
         // FIRST PARKING LOT
         safe_to_send_right = !hasTraffic(movingCars, 0, LEFT) && !indanger[1];
-        safe_to_continue_right = safe_to_send_right; 
-        if (safe_to_send_right || safe_to_continue_right) {
+        if (safe_to_send_right) {
             parkings[0].setRightLight(true);
         }
         if (parkings[0].load() == 0 && parkings[1].load() > 0) {
@@ -108,34 +108,34 @@ public class Player extends oneway.sim.Player {
 
         // WE HANDLE THE MIDDLE CASES
         for (int i = 1; i != parkings.length-1; ++i) {
-            safe_to_send_right = !hasTraffic(movingCars, i, LEFT);
+            safe_to_send_right = !hasTraffic(movingCars, i, LEFT) && (!parkings[i+1].llight || priority == RIGHT);
+            
             safe_to_continue_right = safe_to_send_right && hasTraffic(movingCars, i-1, RIGHT); 
             future_overflow_possibility_R = hasTraffic(movingCars, i+1, LEFT);
             if (future_overflow_possibility_R) {
                 safe_to_continue_right =  safe_to_continue_right && (countTraffic(movingCars, i, RIGHT) + countTraffic(movingCars, i+1, LEFT) + parkings[i+1].load()) < parkings[i+1].getCapacity();
             }
+            incoming_left = hasTraffic(movingCars, i+1, LEFT) && !parkings[i+1].llight;
             if ((parkings[i].rightLoad() > 0 && safe_to_send_right && !indanger[i+1]) || safe_to_continue_right) {
                 parkings[i].setRightLight(true);
             }
             
             cars_going_left = parkings[i].leftLoad() > 0;
-            safe_to_send_left = !hasTraffic(movingCars, i-1, RIGHT) && !parkings[i-1].rlight;
+            safe_to_send_left = !hasTraffic(movingCars, i-1, RIGHT) && (!parkings[i-1].rlight || priority == LEFT);
+            
             safe_to_continue_left = safe_to_send_left && hasTraffic(movingCars, i, LEFT);
             future_overflow_possibility_L = hasTraffic(movingCars, i-1, RIGHT);
             if (future_overflow_possibility_L) {
                 safe_to_continue_left =  safe_to_continue_left && (countTraffic(movingCars, i-1, RIGHT) + countTraffic(movingCars, i, LEFT) + parkings[i-1].load()) < parkings[i-1].getCapacity();
             } 
-            incoming_right = hasTraffic(movingCars, i-1, RIGHT) && !parkings[i-1].rlight;
-            if ((cars_going_left && safe_to_send_left && !indanger[i-1]) || (safe_to_continue_left && !incoming_right)) {
+            if ((cars_going_left && safe_to_send_left && !indanger[i-1]) || safe_to_continue_left) {
                 parkings[i].setLeftLight(true);
             }
         }
 
         // LAST PARKING LOT
         safe_to_send_left = !hasTraffic(movingCars, nsegments-1, RIGHT) && !parkings[parkings.length-2].rlight;
-        safe_to_continue_left = safe_to_send_left;
-        incoming_right = hasTraffic(movingCars, nsegments-1, RIGHT) && !parkings[parkings.length-2].rlight;
-        if (safe_to_send_left || (safe_to_continue_left && !incoming_right)) {
+        if (safe_to_send_left) {
             parkings[parkings.length-1].setLeftLight(true);
         }
 

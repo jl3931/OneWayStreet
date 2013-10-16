@@ -1,3 +1,9 @@
-lopsided.txt ---- timings.txt --- 1615.55
-long.txt ---- timings.txt --- 1612.17
-config.txt ---- timings.txt --- 797.79
+TIMINGS.TXT
+lopsided.txt --- 1615.55
+long.txt --- 1612.17
+config.txt --- 797.79
+
+TIMINGS1.TXT
+lopsided.txt --- 35864.56
+long.txt --- 37700.50
+config.txt --- 25515.86
