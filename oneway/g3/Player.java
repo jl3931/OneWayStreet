@@ -22,32 +22,28 @@ public class Player extends oneway.sim.Player {
     }
 
     public void setLights(MovingCar[] movingCars, oneway.sim.Parking[] left, oneway.sim.Parking[] right, boolean[] llights, boolean[] rlights) {
-        // int[] carsOnRoad = new int[nsegments];
-        int[] leftq = new int[nsegments+1];
-        int[] rightq = new int[nsegments+1];
-        // for (MovingCar c : movingCars)
-            // carsOnRoad[c.segment]++;
-        for (int i = 0; i <= nsegments; i++) {
-            if (left[i] == null)
-                leftq[i] = 0;
-            else
-                leftq[i] = left[i].size();
-            if (right[i] == null)
-                rightq[i] = 0;
-            else
-                rightq[i] = right[i].size();
-        }
-        sim.update(movingCars, leftq, rightq);
 
         // WE FIRST GENERATE ALL OF THE ABSTARCTED OBJECTS TO MAKE THE STRATEGIES EASIER TO UNDERSTAND
         this.parkingLots = generateParkingLots(left, right, llights, rlights);
+        sim.update(movingCars, parkingLots);
+
         // HERE WE GENERATE A BUNCH OF SUCCESSORS NODES BASED ON DIFFERENT STRATEGIES
-
-        boolean[][] strategy = basic_strategy(sim.getMovingCars(), this.parkingLots, LEFT);
-        setStrategy(strategy, llights, rlights);
+        // double best_score = 0.0;
+        // double score_a =
+        // sim.update(movingCars, parkingLots);
+        // for (int i = 0; i < 30; i ++) {
+            boolean[][] strategy = basic_strategy(sim.getMovingCars(), sim.getParkingLots(), RIGHT);
+            setStrategy(strategy, llights, rlights);
+        //     safe = sim.safetyCheck(llights, rlights) && sim.oneStep(llights, rlights);
+        //     sim.evaluatePenalty();
+        // }
+        // for (int i = 0; i < 30; i ++) {
+        //     boolean[][] strategy = basic_strategy(sim.getMovingCars(), sim.getParkingLots(), RIGHT);
+        //     setStrategy(strategy, llights, rlights);
+        //     safe = sim.safetyCheck(llights, rlights) && sim.oneStep(llights, rlights);
+        //     sim.evaluatePenalty();
+        // }
         // WE THEN SELECT THE STRATEGY WITH THE BEST HEURISTIC THAT PASSES THE SAFETY CHECK AND SIMULATE INTO THE FUTURE. 
-
-
         if (sim.safetyCheck(llights, rlights))
             System.out.println("Good");
         else

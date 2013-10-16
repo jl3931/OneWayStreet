@@ -52,6 +52,14 @@ public class Parking extends PlaceNode {
         rlight = p.rlight;
     }
 
+    public void updateParking(Parking p) {
+        this.capacity = p.capacity;
+        this.llight = p.llight;
+        this.rlight = p.rlight;
+        this.leftq = p.leftq;
+        // this.rightq = p.rightq;
+    }
+
 	public Parking(PlaceNode left, int capacity) {
         super(left);
 		this.capacity = capacity;
@@ -60,7 +68,7 @@ public class Parking extends PlaceNode {
     }
 
 	public void add(Car c) {
-        System.out.println("CAR ADDED TO PARKING LOT WITH CAPACITY " + capacity);
+        // System.out.println("CAR ADDED TO PARKING LOT WITH CAPACITY " + capacity);
 		if (c.dir == -1) leftq.add(c);
 		if (c.dir == 1) rightq.add(c);
 	}
@@ -115,12 +123,12 @@ public class Parking extends PlaceNode {
 
     public double getDeliveries() {
         double penalty = 0.0;
-        System.out.println("boom" + leftq.size());
+        // System.out.println("boom" + leftq.size());
         if(left == null) {
             //System.out.println("boom" + leftq.size());
             for (Car c : leftq) {
                 double T = c.getTime();
-                System.out.println("boom" + T);
+                // System.out.println("boom" + T);
                 penalty += (T+1)*Math.log10(T+1);
             }
         }
@@ -134,13 +142,13 @@ public class Parking extends PlaceNode {
     }
 
     public boolean step() {
-        System.out.println("Parking step");
-        System.out.println("llight: " + llight);
-        System.out.println("rlight: " + rlight);
+        // System.out.println("Parking step");
+        // System.out.println("llight: " + llight);
+        // System.out.println("rlight: " + rlight);
         if (llight && !leftq.isEmpty()) {
             if (left.getCar(-1, 0) == null &&
                 left.getCar(-1, 1) == null) {
-                System.out.println("Move out left");
+                // System.out.println("Move out left");
                 Car c = remove(-1);
                 left.add(c);
             }
@@ -148,7 +156,7 @@ public class Parking extends PlaceNode {
         if (rlight && !rightq.isEmpty()) {
             if (right.getCar(1, 0) == null &&
                 right.getCar(1, 1) == null) {
-                System.out.println("Move out right");
+                // System.out.println("Move out right");
                 Car c = remove(1);
                 right.add(c);
             }

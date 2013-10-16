@@ -33,7 +33,7 @@ public class Road extends PlaceNode
 	}
 
     public void add(Car c) {
-        System.out.println("new car: " + c.dir);
+        // System.out.println("new car: " + c.dir);
         if (c.dir == 1) cars[0] = c;
         if (c.dir == -1) cars[length-1] = c;
     }
@@ -82,17 +82,17 @@ public class Road extends PlaceNode
         int dir = getDir();
         if (dir == CRASH)
             return false;
-        System.out.println("Road step "+ dir);        
+        // System.out.println("Road step "+ dir);        
         // move into parking lot, capacity check later
         if (dir == 1 && cars[length-1] != null) {
-            System.out.println("move into parking: 1");
+            // System.out.println("move into parking: 1");
             Car c = cars[length-1];
             right.add(c);
             c.moveForward();
             cars[length-1] = null;
         }
         if (dir == -1 && cars[0] != null) {
-            System.out.println("move into parking: -1");
+            // System.out.println("move into parking: -1");
             Car c = cars[0];
             left.add(c);
             c.moveForward();

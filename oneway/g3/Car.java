@@ -35,13 +35,14 @@ public class Car {
     public void moveForward() {
         distCovered++;
         if (distCovered == Simulator.getFullLength()) {
+            // System.out.println("DELIVERED!");
             Simulator.updateDeliveries(getTime());
         }
-        System.out.println("Move Forward: " + dir + " : "+ distCovered);
+        // System.out.println("Move Forward: " + dir + " : "+ distCovered);
     }
 
 	public int updateTime() {
-		endTime = Simulator.getCurrentTime() + Simulator.getFullLength() - distCovered;
+		endTime = Simulator.getCurrentTime();
 		return endTime;
 	}
 

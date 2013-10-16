@@ -67,7 +67,7 @@ public class Simulator {
         double penalty = 0.0;
         for (Road r : roads) {
             for (int i = 0; i < r.cars.length; i++) {
-                System.out.println(r.cars.length);
+                //System.out.println(r.cars.length);
                 if (r.cars[i] != null) {
                     double T = (double) r.cars[i].getTime();
                     penalty += (T+(fullLength-r.cars[i].distCovered))*Math.log10(T+(fullLength-r.cars[i].distCovered)) - (fullLength)*Math.log10(fullLength); 
@@ -89,6 +89,16 @@ public class Simulator {
         return penalty;
     }
 
+    public Parking[] getParkingLots() {
+        Parking[] parking = new Parking[parkings.size()];
+        int i = 0;
+        for (Parking p : parkings) {
+            parking[i] = p;
+            i++;
+        }
+        return parking;
+    }
+
     public Car[] getMovingCars() {
         LinkedList<Car> cars = new LinkedList<Car>();
         int i = 0;
@@ -106,7 +116,6 @@ public class Simulator {
         i = 0;
         for (Car c : cars) {
             t[i] = c;
-            System.out.println(c);
             i++;
         }
         return t;
@@ -123,6 +132,24 @@ public class Simulator {
 
     public static int getCurrentTime() {
         return currentTime;
+    }
+
+    public int calculateDistance(int dir, int parking) {
+        System.out.println("car parked at: " + parking);
+        int dist = 0;
+        if (dir == 1) {
+            for (int i = 0; i < parking; i++) {
+                dist += roads.get(i).length;
+            }
+            System.out.println("dist: " + dist);
+        }
+        else {
+            for (int i = parking; i < roads.size(); i++) {
+                dist += roads.get(i).length;
+            }
+            System.out.println("dist: " + dist);
+        }
+        return dist;
     }
 
     public int calculateDistance(int dir, int seg, int blck) {
@@ -142,10 +169,14 @@ public class Simulator {
             System.out.println("dist: " + (dist - blck));
             dist += blck; 
         }
+        Car c = roads.get(seg).cars[blck];
+        c.distCovered = dist;
+        System.out.println("time: " + c.getTime());
         return dist;
     }
 
-    public void update(MovingCar[] movingCars, int[] leftq, int[] rightq) {        
+    public void update(MovingCar[] movingCars, Parking[] parkingLots) {        
+        currentTime++;
         int[] carsOnRoad = new int[nsegments];
         for (MovingCar c : movingCars) {
             carsOnRoad[c.segment]++;
@@ -154,28 +185,54 @@ public class Simulator {
             road.cars[c.block] = new Car(c);
             road.cars[c.block].distCovered = calculateDistance(c.dir, c.segment, c.block);
         }
-        currentTime++;
-        // infer car coming info - there can be no car, 1 car or more than 1 cars
-        // at most one extra car on road, and it must be at first block
-        if (roads.get(0).load() != carsOnRoad[0])
-            roads.get(0).pop(1);
-        if (roads.get(nsegments - 1).load() != carsOnRoad[nsegments - 1])
-            roads.get(nsegments - 1).pop(-1);
-        // number of cars in queue have to match
-        if (leftq[0] + rightq[0] < parkings.get(0).load())
-            parkings.get(0).pop(1);
-        while (leftq[0] + rightq[0] > parkings.get(0).load())
-            parkings.get(0).add(new Car(1, currentTime));
-        if (leftq[nsegments] + rightq[nsegments] < parkings.get(nsegments).load())
-            parkings.get(nsegments).pop(-1);
-        while (leftq[nsegments] + rightq[nsegments] > parkings.get(nsegments).load())
-            parkings.get(nsegments).add(new Car(-1, currentTime));
+        int i = 0;
+        for (Parking p : parkingLots) {
+            Parking parking = parkings.get(i);
+            parking.updateParking(p);
+            for (Car c : parking.leftq) {
+                c.distCovered = calculateDistance(c.dir, i);
+            }
+            for (Car c : parking.rightq) {
+                c.distCovered = calculateDistance(c.dir, i);
+            }
+        }
+
+        // int[] leftq = new int[nsegments+1];
+        // int[] rightq = new int[nsegments+1];
+        // for (int i = 0; i <= nsegments; i++) {
+        //     if (left[i] == null)
+        //         leftq[i] = 0;
+        //     else
+        //         leftq[i] = left[i].size();
+        //     if (right[i] == null)
+        //         rightq[i] = 0;
+        //     else
+        //         rightq[i] = right[i].size();
+        // }
+        // 
+        // // infer car coming info - there can be no car, 1 car or more than 1 cars
+        // // at most one extra car on road, and it must be at first block
+        // if (roads.get(0).load() != carsOnRoad[0])
+        //     roads.get(0).pop(1);
+        // if (roads.get(nsegments - 1).load() != carsOnRoad[nsegments - 1])
+        //     roads.get(nsegments - 1).pop(-1);
+
+        // // number of cars in queue have to match
+        // if (leftq[0] + rightq[0] < parkings.get(0).load())
+        //     parkings.get(0).pop(1);
+        // while (leftq[0] + rightq[0] > parkings.get(0).load())
+        //     parkings.get(0).add(new Car(1, currentTime));
+        // if (leftq[nsegments] + rightq[nsegments] < parkings.get(nsegments).load())
+        //     parkings.get(nsegments).pop(-1);
+        // while (leftq[nsegments] + rightq[nsegments] > parkings.get(nsegments).load())
+        //     parkings.get(nsegments).add(new Car(-1, currentTime));
+
 
         // consistency checks
-        for (int i = 0; i < nsegments; i++)
-            assert(carsOnRoad[i] == roads.get(i).load());
-        for (int i = 0; i <= nsegments; i++)
-            assert(leftq[i] + rightq[i] == parkings.get(i).load());
+        // for (int i = 0; i < nsegments; i++)
+        //     assert(carsOnRoad[i] == roads.get(i).load());
+        // for (int i = 0; i <= nsegments; i++)
+        //     assert(leftq[i] + rightq[i] == parkings.get(i).load());
     }
 
     public boolean oneStep(boolean[] llights, boolean[] rlights) {
@@ -198,8 +255,8 @@ public class Simulator {
         // then let cars in parking move
         for (Parking p : parkings)
             safe &= p.step();
-        if (!safe)
-            System.out.println("crash");
+        // if (!safe)
+            // System.out.println("crash");
         return safe;
     }
 
