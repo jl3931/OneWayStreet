@@ -3,6 +3,7 @@ package oneway.g3;
 import oneway.sim.MovingCar;
 // Parking;
 import java.util.*;
+import java.lang.Math;
 
 
 
@@ -13,12 +14,19 @@ public class Player extends oneway.sim.Player {
     public Player() { }
     public final int RIGHT = 1;
     public final int LEFT = -1;
+    public int time_elapsed = 0;
+    public int total_length = 0;
+    public int pulse_duration = 0;
+    public int pulse_direction = RIGHT;
 
     public void init(int nsegments, int[] nblocks, int[] capacity) {
         this.nsegments = nsegments;
         this.capacity = capacity.clone();
         this.nblocks = nblocks.clone();
         sim = new Simulator(nsegments, nblocks, capacity);
+        for (int i= 0; i<nblocks.length; i++) {
+            total_length += nblocks[i];
+        }
     }
 
     public void setLights(MovingCar[] movingCars, oneway.sim.Parking[] left, oneway.sim.Parking[] right, boolean[] llights, boolean[] rlights) {
@@ -35,6 +43,7 @@ public class Player extends oneway.sim.Player {
         // sim.update(movingCars, parkingLots);
         // for (int i = 0; i < 30; i ++) {
         boolean[][] strategy = basic_strategy(sim.getMovingCars(), sim.getParkingLots(), RIGHT);
+        //strategy = pulse_strategy(sim.getMovingCars(), sim.getParkingLots(), RIGHT);
         setStrategy(strategy, llights, rlights);
         //     safe = sim.safetyCheck(llights, rlights) && sim.oneStep(llights, rlights);
         //     sim.evaluatePenalty();
@@ -55,6 +64,7 @@ public class Player extends oneway.sim.Player {
         // sim.update(movingCars, parkingLots);
         sim.oneStep(llights, rlights);
         sim.evaluatePenalty();
+        time_elapsed++;
     }
 
     public void setStrategy(boolean[][] strategy, boolean[] llights, boolean[] rlights) {
@@ -64,6 +74,77 @@ public class Player extends oneway.sim.Player {
         for (int i=0; i != strategy[1].length-1; i++) {
             rlights[i] = strategy[1][i];
         }
+    }
+
+    public boolean[][] pulse_strategy(Car[] movingCars, Parking[] parkings, int priority) {
+        boolean[][] strategy = new boolean[2][parkings.length];
+        int optimal_pulse_length = 5;
+
+        // Early game pulsing strategy
+        int middle_parking = getMiddleParking();
+        int shortest_distance = shortestDistanceToParking(middle_parking);
+        if (time_elapsed < shortest_distance) {
+            for (int i=0; i<parkings.length; i++) {
+                if (i <= middle_parking) {
+                    parkings[i].rlight = true;
+                }
+                else {
+                    parkings[i].llight = true;
+                }
+            }
+        }
+        else {
+            pulse_duration++;
+            if (pulse_duration >= optimal_pulse_length) {
+                pulse_duration = 0;
+                if (pulse_direction == RIGHT) {
+                    pulse_direction = LEFT;
+                }
+                else {
+                    pulse_direction = RIGHT;
+                }
+            }
+            for (int i=1; i<parkings.length; i++) {
+                if (pulse_direction == RIGHT) {
+                    if (!hasTraffic(movingCars, i, LEFT)) {
+                        parkings[i].rlight = true;
+                    } 
+                    else {
+                        parkings[i].rlight = false;
+                    }
+                    //IF THERE IS OPPORTUNITY FOR A QUICK COUNTERPULSE
+                    if (i!=0 && !hasTraffic(movingCars, i-1, RIGHT) && (arriveBefore(i-1, movingCars,i-2,LEFT))) {
+                        parkings[i].llight = true;
+                    } 
+                    else {
+                        parkings[i].llight = false;
+                    }
+                   
+                }
+                else {
+                    if (!hasTraffic(movingCars, i-1, RIGHT)) {
+                        parkings[i].llight = true;
+                    }
+                    else {
+                        parkings[i].llight = false;
+                    }
+                    //IF THERE IS OPPORTUNITY FOR A QUICK COUNTERPULSE
+
+                    if (!hasTraffic(movingCars, i, LEFT) && arriveBefore(i, movingCars,i+1,LEFT)) {
+                        parkings[i].rlight = true;
+                    }
+                    else {
+                        parkings[i].rlight = false;
+                    }
+                }
+            } 
+        }
+
+        for (int i = 0; i != parkings.length; i++) {
+            strategy[0][i] = parkings[i].llight;
+            strategy[1][i] = parkings[i].rlight;
+        }
+        return strategy;
     }
 
     public boolean[][] basic_strategy(Car[] movingCars, Parking[] parkings, int priority) {
@@ -160,14 +241,24 @@ public class Player extends oneway.sim.Player {
         for (i = 0; i != nsegments-1; ++i) {
             // CHANGE TO TURN OFF ONE WITH MOST ACCUMULATED PENALTY RATHER THAN JUST ARBITRARY
             if (parkings[i].rlight && parkings[i+1].llight) {
-                parkings[i+1].setLeftLight(false);
+                if (parkings[i+1].leftq.size() > parkings[i].rightq.size()) {
+                    parkings[i].setRightLight(false);
+                }
+                else {
+                    parkings[i+1].setLeftLight(false);
+                }
             }
 
         }
         for (i = 1; i != nsegments; ++i) {
             // CHANGE TO TURN OFF ONE WITH MOST ACCUMULATED PENALTY RATHER THAN JUST ARBITRARY
             if (parkings[i].llight && parkings[i-1].rlight) {
-                parkings[i-1].setRightLight(false);
+                if (parkings[i].leftq.size() > parkings[i-1].rightq.size()) {
+                    parkings[i-1].setRightLight(false);
+                }
+                else {
+                    parkings[i].setLeftLight(false);
+                }
             }
         }
 
@@ -190,6 +281,80 @@ public class Player extends oneway.sim.Player {
         // rightmost parking lot
         parkingLots[numParkings-1] = new Parking(capacity[numParkings-1], left[numParkings-1], right[numParkings-1], llights[numParkings-2], true);
         return parkingLots;
+    }
+
+    private int getMiddleParking() {
+        int right_sum = 0;
+        int left_sum = 0;
+        int r_idx = 0;
+        int l_idx = 0;
+        for (int i= 0; i<nblocks.length; i++) {
+            right_sum += nblocks[i];
+            if (right_sum > total_length/2) {
+                r_idx = i;
+                break;
+            }
+        }
+        for (int i= nblocks.length-1; i>=0; i--) {
+            left_sum += nblocks[i];
+            if (left_sum > total_length/2) {
+                l_idx = i;
+                break;
+            }
+        }
+        if (Math.abs(total_length/2 - left_sum) < Math.abs(total_length/2 - right_sum)) {
+            return l_idx;
+        }
+        else {
+            return r_idx;
+        }
+    }
+
+    private int shortestDistanceToParking(int idx) {
+        int right_sum = 0;
+        int left_sum = 0;
+        for (int i= 0; i<idx; i++) {
+            right_sum += nblocks[i];
+        }
+        for (int i= nblocks.length-1; i>=idx; i--) {
+            left_sum += nblocks[i];
+        }
+        if (left_sum < right_sum) {
+            return left_sum;
+        }
+        else {
+            return right_sum;
+        }
+    }
+
+    //direction in this case is the direction you want to verify to be clear
+    private boolean arriveBefore(int parking, Car[] cars, int seg, int dir) {
+        Car closest = null;
+        boolean safe = false;
+        for (Car car : cars) {
+            // this means a collision might occur
+            if (car.segment == seg && car.dir == dir) {
+                if (dir == RIGHT && (closest == null || car.block < closest.block)) {
+                    closest = car;
+                } 
+                else if (dir == LEFT && (closest == null || car.block > closest.block)) {
+                    closest = car;
+                } 
+            }
+            if (dir == LEFT && closest != null) {
+                safe =  nblocks[parking] <= closest.block;
+            }
+            else if (dir == LEFT && closest != null) {
+                safe =  nblocks[parking] <= nblocks[parking+1];
+            }
+            else if (parking-2 >= 0 && dir == RIGHT && closest != null) {
+                safe =  nblocks[parking-1] <= (nblocks[parking-2] - closest.block);
+            }
+            else if (parking-2 >= 0 && dir == RIGHT && closest == null) {
+                safe =  nblocks[parking-1] <= nblocks[parking-2];
+            }
+        }
+        return safe;
     }
 
 
