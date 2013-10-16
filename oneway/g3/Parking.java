@@ -12,8 +12,28 @@ public class Parking extends PlaceNode {
 	private LinkedList<Car> rightq;
 	private int capacity;
     // lights at the side of parking
-    private boolean llight;
-    private boolean rlight;
+    public boolean llight;
+    public boolean rlight;
+
+    public Parking(int capacity, oneway.sim.Parking leftCars, oneway.sim.Parking rightCars, boolean llight, boolean rlight) {
+        this.capacity = capacity;
+        this.llight = llight;
+        this.rlight = rlight;
+        leftq = new LinkedList<Car>();
+        rightq = new LinkedList<Car>();
+        if (leftCars != null) {
+            for (Integer startTime : leftCars) {
+                Car newC = new Car(-1, startTime);
+                leftq.add(newC);
+            }
+        }
+        if (rightCars != null) {
+            for (Integer startTime : rightCars) {
+                Car newC = new Car(1, startTime);
+                rightq.add(newC);
+            }
+        }
+    }
 
     public Parking(PlaceNode left, Parking p) {
         super(left);
@@ -61,12 +81,28 @@ public class Parking extends PlaceNode {
         this.rlight = rlight;
     }
 
+    public void setRightLight(boolean rlight) {;
+        this.rlight = rlight;
+    }
+
+    public void setLeftLight(boolean llight) {
+        this.llight = llight;
+    }
+
     public int getCapacity() {
         return capacity;
     }
     
     public int load() {
         return leftq.size() + rightq.size();
+    }
+
+    public int leftLoad() {
+        return leftq.size();
+    }
+
+    public int rightLoad() {
+        return rightq.size();
     }
 
     public void pop(int dir) {

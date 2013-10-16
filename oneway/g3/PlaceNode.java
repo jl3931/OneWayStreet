@@ -7,6 +7,10 @@ public abstract class PlaceNode
 	PlaceNode left;
 	PlaceNode right;
 
+    public PlaceNode() {
+      
+    }
+
     public PlaceNode(PlaceNode left) {
         this(left, null);
     }

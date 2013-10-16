@@ -17,7 +17,6 @@ public class Car {
         dir = c.dir;
         startTime = c.startTime;
         distCovered = c.distCovered;
-        computePenalty();
     }
     
     public Car(MovingCar m) {
