@@ -16,14 +16,18 @@ public class Car {
 	private double estPenalty;
 
     public Car(Car c) {
-        dir = c.dir;
-        startTime = c.startTime;
-        distCovered = c.distCovered;
+        this.dir = c.dir;
+        this.startTime = c.startTime;
+        this.distCovered = c.distCovered;
+        this.segment = c.segment;
+        this.block = c.block;
     }
     
     public Car(MovingCar m) {
 		this.dir = m.dir;
         this.startTime = m.startTime;
+        this.segment = m.segment;
+        this.block = m.block;
 	}
     
 	public Car(int dir, int startTime) {

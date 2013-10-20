@@ -30,40 +30,56 @@ public class Player extends oneway.sim.Player {
     }
 
     public void setLights(MovingCar[] movingCars, oneway.sim.Parking[] left, oneway.sim.Parking[] right, boolean[] llights, boolean[] rlights) {
-
+        boolean[][] strategy;
+        
         // WE FIRST GENERATE ALL OF THE ABSTARCTED OBJECTS TO MAKE THE STRATEGIES EASIER TO UNDERSTAND
         this.parkingLots = generateParkingLots(left, right, llights, rlights);
-        sim.update(movingCars, parkingLots);
-        // sim.oneStep(llights, rlights);
-        // sim.update(movingCars, parkingLots);
-        // sim = new Simulator(nsegments, nblocks, capacity);
-        // HERE WE GENERATE A BUNCH OF SUCCESSORS NODES BASED ON DIFFERENT STRATEGIES
-        // double best_score = 0.0;
-        // double score_a =
-        // sim.update(movingCars, parkingLots);
-        // for (int i = 0; i < 30; i ++) {
-        boolean[][] strategy = basic_strategy(sim.getMovingCars(), sim.getParkingLots(), RIGHT);
-        //strategy = pulse_strategy(sim.getMovingCars(), sim.getParkingLots(), RIGHT);
-        setStrategy(strategy, llights, rlights);
-        //     safe = sim.safetyCheck(llights, rlights) && sim.oneStep(llights, rlights);
-        //     sim.evaluatePenalty();
+
+        
+        double penalty_R;
+        sim.update(movingCars, parkingLots, time_elapsed);
+        for (int i = 0; i < total_length+10; i ++) {
+            strategy = basic_strategy(sim.getMovingCars(), sim.getParkingLots(), RIGHT); 
+            sim.oneStep(strategy[0], strategy[1]);
+        }
+        penalty_R = sim.evaluatePenalty();     
+
+        
+        double penalty_L;
+        sim.update(movingCars, parkingLots, time_elapsed);
+        for (int i = 0; i < total_length+10; i ++) {
+            strategy = basic_strategy(sim.getMovingCars(), sim.getParkingLots(), LEFT); 
+            sim.oneStep(strategy[0], strategy[1]);
+        }
+        penalty_L = sim.evaluatePenalty();
+
+        // double penalty_P;
+        // sim.update(movingCars, parkingLots, time_elapsed);
+        // for (int i = 0; i < total_length+10; i ++) {
+        //     strategy = pulse_strategy(sim.getMovingCars(), sim.getParkingLots(), LEFT); 
+        //     sim.oneStep(strategy[0], strategy[1]);
         // }
-        // for (int i = 0; i < 30; i ++) {
-        //     boolean[][] strategy = basic_strategy(sim.getMovingCars(), sim.getParkingLots(), RIGHT);
-        //     setStrategy(strategy, llights, rlights);
-        //     safe = sim.safetyCheck(llights, rlights) && sim.oneStep(llights, rlights);
-        //     sim.evaluatePenalty();
-        // }
+        // penalty_P = sim.evaluatePenalty();
+
         // WE THEN SELECT THE STRATEGY WITH THE BEST HEURISTIC THAT PASSES THE SAFETY CHECK AND SIMULATE INTO THE FUTURE. 
+
         if (sim.safetyCheck(llights, rlights))
             System.out.println("Good");
         else
             System.out.println("Fail");
 
-        // sim.oneStep(llights, rlights);
-        // sim.update(movingCars, parkingLots);
-        sim.oneStep(llights, rlights);
-        sim.evaluatePenalty();
+        sim.update(movingCars, parkingLots, time_elapsed);
+        if (penalty_R <= penalty_L) {
+            strategy = basic_strategy(sim.getMovingCars(), sim.getParkingLots(), RIGHT);
+        }
+        else {
+            strategy = basic_strategy(sim.getMovingCars(), sim.getParkingLots(), LEFT);
+        }
+        // strategy = pulse_strategy(sim.getMovingCars(), sim.getParkingLots(), LEFT);
+        setStrategy(strategy, llights, rlights);
+        //sim.oneStep(llights, rlights);
+        // sim.evaluatePenalty();
+
         time_elapsed++;
     }
 
@@ -76,14 +92,82 @@ public class Player extends oneway.sim.Player {
         }
     }
 
+    public int calculateOptimalPulse(Car[] movingCars, Parking[] parkings, int dir) {
+        int largest_load = 0;
+        int idx = 0;
+        if (dir == RIGHT) {
+            int i = 0;
+            for (Parking p : parkings) {
+                int load = p.rightLoad();
+                if (load > largest_load) {
+                    largest_load = load;
+                    idx = i;
+                }
+                i++;
+            }
+        }
+        else {
+            int i = 0;
+            for (Parking p : parkings) {
+                int load = p.leftLoad();
+                if (load > largest_load) {
+                    largest_load = load;
+                    idx = i;
+                }
+                i++;
+            }
+        }
+        int largest_load_length = 0; 
+        if (dir == RIGHT) {
+            if (idx == nsegments) {
+                largest_load_length = 0;
+            }
+            else {
+                largest_load_length = nblocks[idx];
+            }
+        }
+        else {
+            if (idx == 0) {
+                largest_load_length = 0;
+            }
+            else {
+                largest_load_length = nblocks[idx-1];
+            }
+        }
+
+        int longest_segment = 0;
+        int seg_index = 0;
+        for (int i=0; i<nsegments; i++) {
+            if (nblocks[i] > longest_segment) {
+                seg_index = i;
+                longest_segment = nblocks[i];
+            }
+        }
+        int longest_load = 0;
+        if (dir == RIGHT) {
+            longest_load = parkings[seg_index].rightLoad();
+        }
+        else {
+            longest_load = parkings[seg_index+1].leftLoad();
+        }
+
+        if (largest_load_length+largest_load*2 >= longest_segment+longest_load*2) {
+            return largest_load_length+largest_load*2;
+        }
+        else {
+            return longest_segment+longest_load*2;
+        }
+    }
+
     public boolean[][] pulse_strategy(Car[] movingCars, Parking[] parkings, int priority) {
         boolean[][] strategy = new boolean[2][parkings.length];
-        int optimal_pulse_length = 5;
+        int optimal_pulse_length = 0;
 
         // Early game pulsing strategy
         int middle_parking = getMiddleParking();
         int shortest_distance = shortestDistanceToParking(middle_parking);
-        if (time_elapsed < shortest_distance) {
+        if (time_elapsed < shortest_distance && countAllTraffic(movingCars) < parkings[middle_parking].capacity) {
+            System.out.println("INITIAL PHASE END");
             for (int i=0; i<parkings.length; i++) {
                 if (i <= middle_parking) {
                     parkings[i].rlight = true;
@@ -96,6 +180,7 @@ public class Player extends oneway.sim.Player {
         else {
             pulse_duration++;
             if (pulse_duration >= optimal_pulse_length) {
+                optimal_pulse_length = calculateOptimalPulse(movingCars, parkings, pulse_direction);
                 pulse_duration = 0;
                 if (pulse_direction == RIGHT) {
                     pulse_direction = LEFT;
@@ -104,16 +189,17 @@ public class Player extends oneway.sim.Player {
                     pulse_direction = RIGHT;
                 }
             }
-            for (int i=1; i<parkings.length; i++) {
+            for (int i=0; i<parkings.length; i++) {
                 if (pulse_direction == RIGHT) {
-                    if (!hasTraffic(movingCars, i, LEFT)) {
+                    
+                    if (!hasTraffic(movingCars, i, LEFT) && handlesIncomingLoad(parkings, movingCars,i+1, pulse_direction, optimal_pulse_length - pulse_duration)) {
                         parkings[i].rlight = true;
                     } 
                     else {
                         parkings[i].rlight = false;
                     }
                     //IF THERE IS OPPORTUNITY FOR A QUICK COUNTERPULSE
-                    if (i!=0 && !hasTraffic(movingCars, i-1, RIGHT) && (arriveBefore(i-1, movingCars,i-2,LEFT))) {
+                    if (i!=0 && !hasTraffic(movingCars, i-1, RIGHT) && (arriveBefore(i-1, movingCars,i-2,LEFT)) && handlesIncomingLoad(parkings, movingCars,i-1, pulse_direction, 0)) {
                         parkings[i].llight = true;
                     } 
                     else {
@@ -122,7 +208,7 @@ public class Player extends oneway.sim.Player {
                    
                 }
                 else {
-                    if (!hasTraffic(movingCars, i-1, RIGHT)) {
+                    if (!hasTraffic(movingCars, i-1, RIGHT) && handlesIncomingLoad(parkings, movingCars,i-1, pulse_direction, optimal_pulse_length - pulse_duration)) {
                         parkings[i].llight = true;
                     }
                     else {
@@ -130,7 +216,7 @@ public class Player extends oneway.sim.Player {
                     }
                     //IF THERE IS OPPORTUNITY FOR A QUICK COUNTERPULSE
 
-                    if (!hasTraffic(movingCars, i, LEFT) && arriveBefore(i, movingCars,i+1,LEFT)) {
+                    if (!hasTraffic(movingCars, i, LEFT) && arriveBefore(i, movingCars,i+1,LEFT) && handlesIncomingLoad(parkings, movingCars,i+1, pulse_direction, 0)) {
                         parkings[i].rlight = true;
                     }
                     else {
@@ -357,6 +443,33 @@ public class Player extends oneway.sim.Player {
         return safe;
     }
 
+    public boolean handlesIncomingLoad(Parking[] parkings, Car[] cars, int seg, int direction, int time_remaining) {
+        if (seg <= 0 || seg >= nsegments) {
+            return true;
+        }
+        else {
+            int target_load_to_handle = countTraffic(cars, seg-1, RIGHT) + countTraffic(cars, seg, LEFT) + parkings[seg].load();
+            if (direction == RIGHT) {    
+                if (nblocks[seg-1] <= time_remaining) {
+                    target_load_to_handle -= countTraffic(cars, seg-1, RIGHT);
+                }
+            }
+            else {
+                if (nblocks[seg] <= time_remaining) {
+                    target_load_to_handle -= countTraffic(cars, seg, LEFT);
+                }
+            }
+            return target_load_to_handle < parkings[seg].capacity;
+        }
+    }
+
+    private int countAllTraffic(Car[] cars) {
+        int count = 0;
+        for (Car car : cars) {
+            count ++;
+        }
+        return count;
+    }
 
     // check if the segment has traffic
     private int countTraffic(Car[] cars, int seg, int dir) {

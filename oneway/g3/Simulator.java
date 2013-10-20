@@ -116,6 +116,7 @@ public class Simulator {
         i = 0;
         for (Car c : cars) {
             t[i] = c;
+            System.out.println(c);
             i++;
         }
         return t;
@@ -175,9 +176,15 @@ public class Simulator {
         return dist;
     }
 
-    public void update(MovingCar[] movingCars, Parking[] parkingLots) {        
-        currentTime++;
+    public void update(MovingCar[] movingCars, Parking[] parkingLots, int time) {        
+        currentTime = time;
         int[] carsOnRoad = new int[nsegments];
+        
+        for (Road r : roads) {
+            for (int i = 0; i<r.cars.length; i++) {
+                r.cars[i] = null;
+            }
+        }
         for (MovingCar c : movingCars) {
             carsOnRoad[c.segment]++;
             // generate a car for each moving one
@@ -195,6 +202,7 @@ public class Simulator {
             for (Car c : parking.rightq) {
                 c.distCovered = calculateDistance(c.dir, i);
             }
+            i++;
         }
 
         // int[] leftq = new int[nsegments+1];
@@ -236,6 +244,7 @@ public class Simulator {
     }
 
     public boolean oneStep(boolean[] llights, boolean[] rlights) {
+        currentTime++;
          // set lights
         parkings.get(0).setLight(false, rlights[0]);
         parkings.get(nsegments).setLight(llights[nsegments - 1], false);

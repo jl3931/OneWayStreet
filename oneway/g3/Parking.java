@@ -56,8 +56,15 @@ public class Parking extends PlaceNode {
         this.capacity = p.capacity;
         this.llight = p.llight;
         this.rlight = p.rlight;
-        this.leftq = p.leftq;
-        // this.rightq = p.rightq;
+
+        this.leftq = new LinkedList<Car>();
+        for (Car c : p.leftq) {
+            this.leftq.add(new Car(c));
+        }
+        this.rightq = new LinkedList<Car>();
+        for (Car c : p.rightq) {
+            this.rightq.add(new Car(c));
+        }
     }
 
 	public Parking(PlaceNode left, int capacity) {
